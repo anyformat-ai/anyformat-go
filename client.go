@@ -8,8 +8,8 @@ import (
 	"os"
 	"slices"
 
-	"github.com/stainless-sdks/anyformat-go/internal/requestconfig"
-	"github.com/stainless-sdks/anyformat-go/option"
+	"github.com/anyformat-ai/anyformat-go/internal/requestconfig"
+	"github.com/anyformat-ai/anyformat-go/option"
 )
 
 // Client creates a struct with services and top level methods that help with

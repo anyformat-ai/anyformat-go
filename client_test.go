@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stainless-sdks/anyformat-go"
-	"github.com/stainless-sdks/anyformat-go/internal"
-	"github.com/stainless-sdks/anyformat-go/option"
+	"github.com/anyformat-ai/anyformat-go"
+	"github.com/anyformat-ai/anyformat-go/internal"
+	"github.com/anyformat-ai/anyformat-go/option"
 )
 
 type closureTransport struct {
