@@ -1,0 +1,238 @@
+// File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
+
+package anyformat_test
+
+import (
+	"context"
+	"errors"
+	"os"
+	"testing"
+
+	"github.com/stainless-sdks/anyformat-go"
+	"github.com/stainless-sdks/anyformat-go/internal/testutil"
+	"github.com/stainless-sdks/anyformat-go/option"
+)
+
+func TestWorkflowNew(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anyformat.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workflows.New(context.TODO())
+	if err != nil {
+		var apierr *anyformat.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowGet(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anyformat.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workflows.Get(context.TODO(), "workflow_id")
+	if err != nil {
+		var apierr *anyformat.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowListWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anyformat.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workflows.List(context.TODO(), anyformat.WorkflowListParams{
+		Order:    anyformat.String("order"),
+		Page:     anyformat.Int(1),
+		PageSize: anyformat.Int(1),
+		SortBy:   anyformat.String("sort_by"),
+		Status:   anyformat.String("status"),
+	})
+	if err != nil {
+		var apierr *anyformat.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowDelete(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anyformat.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	err := client.Workflows.Delete(context.TODO(), "workflow_id")
+	if err != nil {
+		var apierr *anyformat.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowListRunsWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anyformat.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workflows.ListRuns(
+		context.TODO(),
+		"workflow_id",
+		anyformat.WorkflowListRunsParams{
+			Page:     anyformat.Int(1),
+			PageSize: anyformat.Int(1),
+		},
+	)
+	if err != nil {
+		var apierr *anyformat.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowResultsWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anyformat.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workflows.Results(
+		context.TODO(),
+		"workflow_id",
+		anyformat.WorkflowResultsParams{
+			AsLists:      anyformat.String("as_lists"),
+			OutputFormat: anyformat.String("jsonl"),
+		},
+	)
+	if err != nil {
+		var apierr *anyformat.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowRunWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anyformat.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workflows.Run(
+		context.TODO(),
+		"workflow_id",
+		anyformat.WorkflowRunParams{
+			ContentType: anyformat.String("content_type"),
+			File:        anyformat.String("file"),
+			FileBase64:  anyformat.String("file_base64"),
+			Filename:    anyformat.String("filename"),
+			Text:        anyformat.String("text"),
+		},
+	)
+	if err != nil {
+		var apierr *anyformat.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
+
+func TestWorkflowUploadWithOptionalParams(t *testing.T) {
+	t.Skip("Mock server tests are disabled")
+	baseURL := "http://localhost:4010"
+	if envURL, ok := os.LookupEnv("TEST_API_BASE_URL"); ok {
+		baseURL = envURL
+	}
+	if !testutil.CheckTestServer(t, baseURL) {
+		return
+	}
+	client := anyformat.NewClient(
+		option.WithBaseURL(baseURL),
+		option.WithAPIKey("My API Key"),
+	)
+	_, err := client.Workflows.Upload(
+		context.TODO(),
+		"workflow_id",
+		anyformat.WorkflowUploadParams{
+			ContentType: anyformat.String("content_type"),
+			File:        anyformat.String("file"),
+			FileBase64:  anyformat.String("file_base64"),
+			Filename:    anyformat.String("filename"),
+			Text:        anyformat.String("text"),
+		},
+	)
+	if err != nil {
+		var apierr *anyformat.Error
+		if errors.As(err, &apierr) {
+			t.Log(string(apierr.DumpRequest(true)))
+		}
+		t.Fatalf("err should be nil: %s", err.Error())
+	}
+}
