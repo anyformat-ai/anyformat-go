@@ -1,8 +1,8 @@
 package sentinel_test
 
 import (
-	"github.com/stainless-sdks/anyformat-go/internal/encoding/json/sentinel"
-	"github.com/stainless-sdks/anyformat-go/packages/param"
+	"github.com/anyformat-ai/anyformat-go/internal/encoding/json/sentinel"
+	"github.com/anyformat-ai/anyformat-go/packages/param"
 	"reflect"
 	"slices"
 	"testing"

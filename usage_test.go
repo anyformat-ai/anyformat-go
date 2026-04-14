@@ -7,9 +7,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stainless-sdks/anyformat-go"
-	"github.com/stainless-sdks/anyformat-go/internal/testutil"
-	"github.com/stainless-sdks/anyformat-go/option"
+	"github.com/anyformat-ai/anyformat-go"
+	"github.com/anyformat-ai/anyformat-go/internal/testutil"
+	"github.com/anyformat-ai/anyformat-go/option"
 )
 
 func TestUsage(t *testing.T) {

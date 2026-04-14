@@ -1,7 +1,7 @@
 package anyformat
 
 import (
-	"github.com/stainless-sdks/anyformat-go/packages/param"
+	"github.com/anyformat-ai/anyformat-go/packages/param"
 	"io"
 	"time"
 )

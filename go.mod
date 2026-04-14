@@ -1,4 +1,4 @@
-module github.com/stainless-sdks/anyformat-go
+module github.com/anyformat-ai/anyformat-go
 
 go 1.22
 
