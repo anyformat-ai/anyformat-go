@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/stainless-sdks/anyformat-go/packages/param"
+	"github.com/anyformat-ai/anyformat-go/packages/param"
 )
 
 var encoders sync.Map // map[reflect.Type]encoderFunc

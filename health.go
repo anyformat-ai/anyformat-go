@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/stainless-sdks/anyformat-go/internal/requestconfig"
-	"github.com/stainless-sdks/anyformat-go/option"
+	"github.com/anyformat-ai/anyformat-go/internal/requestconfig"
+	"github.com/anyformat-ai/anyformat-go/option"
 )
 
 // Health checks.

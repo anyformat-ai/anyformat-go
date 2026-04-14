@@ -3,8 +3,8 @@
 package anyformat
 
 import (
-	"github.com/stainless-sdks/anyformat-go/internal/apierror"
-	"github.com/stainless-sdks/anyformat-go/packages/param"
+	"github.com/anyformat-ai/anyformat-go/internal/apierror"
+	"github.com/anyformat-ai/anyformat-go/packages/param"
 )
 
 // aliased to make [param.APIUnion] private when embedding

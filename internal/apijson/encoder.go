@@ -13,7 +13,7 @@ import (
 
 	"github.com/tidwall/sjson"
 
-	shimjson "github.com/stainless-sdks/anyformat-go/internal/encoding/json"
+	shimjson "github.com/anyformat-ai/anyformat-go/internal/encoding/json"
 )
 
 var encoders sync.Map // map[encoderEntry]encoderFunc

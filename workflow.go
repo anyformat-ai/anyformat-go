@@ -13,13 +13,13 @@ import (
 	"slices"
 	"time"
 
-	"github.com/stainless-sdks/anyformat-go/internal/apiform"
-	"github.com/stainless-sdks/anyformat-go/internal/apijson"
-	"github.com/stainless-sdks/anyformat-go/internal/apiquery"
-	"github.com/stainless-sdks/anyformat-go/internal/requestconfig"
-	"github.com/stainless-sdks/anyformat-go/option"
-	"github.com/stainless-sdks/anyformat-go/packages/param"
-	"github.com/stainless-sdks/anyformat-go/packages/respjson"
+	"github.com/anyformat-ai/anyformat-go/internal/apiform"
+	"github.com/anyformat-ai/anyformat-go/internal/apijson"
+	"github.com/anyformat-ai/anyformat-go/internal/apiquery"
+	"github.com/anyformat-ai/anyformat-go/internal/requestconfig"
+	"github.com/anyformat-ai/anyformat-go/option"
+	"github.com/anyformat-ai/anyformat-go/packages/param"
+	"github.com/anyformat-ai/anyformat-go/packages/respjson"
 )
 
 // Workflow CRUD, execution, runs, and results.
