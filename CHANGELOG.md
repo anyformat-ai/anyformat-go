@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.0 (2026-04-14)
+
+Full Changelog: [v0.0.2...v0.1.0](https://github.com/anyformat-ai/anyformat-go/compare/v0.0.2...v0.1.0)
+
+### Features
+
+* **api:** rename anyformat-ai-mcp to anyformat-mcp ([f322f03](https://github.com/anyformat-ai/anyformat-go/commit/f322f0347ca6783aaaad303ab2c0da2669b713a9))
+
 ## 0.0.2 (2026-04-14)
 
 Full Changelog: [v0.0.1...v0.0.2](https://github.com/anyformat-ai/anyformat-go/compare/v0.0.1...v0.0.2)
