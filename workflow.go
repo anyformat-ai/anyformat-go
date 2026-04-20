@@ -96,18 +96,6 @@ func (r *WorkflowService) ListRuns(ctx context.Context, workflowID string, query
 	return res, err
 }
 
-// Get workflow results.
-func (r *WorkflowService) Results(ctx context.Context, workflowID string, query WorkflowResultsParams, opts ...option.RequestOption) (res *WorkflowResultsResponse, err error) {
-	opts = slices.Concat(r.options, opts)
-	if workflowID == "" {
-		err = errors.New("missing required workflow_id parameter")
-		return nil, err
-	}
-	path := fmt.Sprintf("v2/workflows/%s/results/", url.PathEscape(workflowID))
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
-	return res, err
-}
-
 // Execute workflow — returns collection UUID.
 func (r *WorkflowService) Run(ctx context.Context, workflowID string, body WorkflowRunParams, opts ...option.RequestOption) (res *WorkflowRunResponse, err error) {
 	opts = slices.Concat(r.options, opts)
@@ -228,8 +216,6 @@ func (r *WorkflowListRunsResponseResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkflowResultsResponse = any
-
 // Response for workflow run endpoint (v2) — collection UUID as identifier.
 type WorkflowRunResponse struct {
 	ID         string `json:"id" api:"required"`
@@ -301,26 +287,9 @@ func (r WorkflowListRunsParams) URLQuery() (v url.Values, err error) {
 	})
 }
 
-type WorkflowResultsParams struct {
-	AsLists      param.Opt[string] `query:"as_lists,omitzero" json:"-"`
-	OutputFormat param.Opt[string] `query:"output_format,omitzero" json:"-"`
-	paramObj
-}
-
-// URLQuery serializes [WorkflowResultsParams]'s query parameters as `url.Values`.
-func (r WorkflowResultsParams) URLQuery() (v url.Values, err error) {
-	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
-		ArrayFormat:  apiquery.ArrayQueryFormatComma,
-		NestedFormat: apiquery.NestedQueryFormatBrackets,
-	})
-}
-
 type WorkflowRunParams struct {
-	ContentType param.Opt[string] `json:"content_type,omitzero"`
-	File        param.Opt[string] `json:"file,omitzero"`
-	FileBase64  param.Opt[string] `json:"file_base64,omitzero"`
-	Filename    param.Opt[string] `json:"filename,omitzero"`
-	Text        param.Opt[string] `json:"text,omitzero"`
+	File param.Opt[string] `json:"file,omitzero"`
+	Text param.Opt[string] `json:"text,omitzero"`
 	paramObj
 }
 
@@ -343,11 +312,8 @@ func (r WorkflowRunParams) MarshalMultipart() (data []byte, contentType string, 
 }
 
 type WorkflowUploadParams struct {
-	ContentType param.Opt[string] `json:"content_type,omitzero"`
-	File        param.Opt[string] `json:"file,omitzero"`
-	FileBase64  param.Opt[string] `json:"file_base64,omitzero"`
-	Filename    param.Opt[string] `json:"filename,omitzero"`
-	Text        param.Opt[string] `json:"text,omitzero"`
+	File param.Opt[string] `json:"file,omitzero"`
+	Text param.Opt[string] `json:"text,omitzero"`
 	paramObj
 }
 
