@@ -22,8 +22,7 @@ type Client struct {
 	// Webhook subscriptions for async notifications.
 	Webhooks WebhookService
 	// File collection management.
-	Files FileService
-	// Workflow CRUD, execution, runs, and results.
+	Files     FileService
 	Workflows WorkflowService
 }
 
