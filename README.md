@@ -6,7 +6,7 @@
 
 <!-- x-release-please-end -->
 
-The Anyformat Go library provides convenient access to the Anyformat REST API
+The Anyformat Go library provides convenient access to the [Anyformat REST API](https://docs.anyformat.ai)
 from applications written in Go.
 
 It is generated with [Stainless](https://www.stainless.com/).
@@ -65,11 +65,17 @@ func main() {
 	client := anyformat.NewClient(
 		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("ANYFORMAT_API_KEY")
 	)
-	response, err := client.Health.Check(context.TODO())
+	response, err := client.Workflows.Run(
+		context.TODO(),
+		"0686bb97-8c30-70f0-8000-97669e000eb8",
+		anyformat.WorkflowRunParams{
+			Text: anyformat.String("Invoice #12345\nDate: 2025-01-15\nAmount: $1,250.00\nVendor: Acme Corp"),
+		},
+	)
 	if err != nil {
 		panic(err.Error())
 	}
-	fmt.Printf("%+v\n", response)
+	fmt.Printf("%+v\n", response.ID)
 }
 
 ```

@@ -25,9 +25,15 @@ func TestUsage(t *testing.T) {
 		option.WithBaseURL(baseURL),
 		option.WithAPIKey("My API Key"),
 	)
-	response, err := client.Health.Check(context.TODO())
+	response, err := client.Workflows.Run(
+		context.TODO(),
+		"0686bb97-8c30-70f0-8000-97669e000eb8",
+		anyformat.WorkflowRunParams{
+			Text: anyformat.String("Invoice #12345\nDate: 2025-01-15\nAmount: $1,250.00\nVendor: Acme Corp"),
+		},
+	)
 	if err != nil {
 		t.Fatalf("err should be nil: %s", err.Error())
 	}
-	t.Logf("%+v\n", response)
+	t.Logf("%+v\n", response.ID)
 }

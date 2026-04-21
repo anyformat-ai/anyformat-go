@@ -22,8 +22,6 @@ import (
 	"github.com/anyformat-ai/anyformat-go/packages/respjson"
 )
 
-// Workflow CRUD, execution, runs, and results.
-//
 // WorkflowService contains methods and other services that help with interacting
 // with the anyformat API.
 //
@@ -82,6 +80,49 @@ func (r *WorkflowService) Delete(ctx context.Context, workflowID string, opts ..
 	path := fmt.Sprintf("v2/workflows/%s/", url.PathEscape(workflowID))
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodDelete, path, nil, nil, opts...)
 	return err
+}
+
+// Upload files to a workflow, creating a file collection.
+func (r *WorkflowService) NewFile(ctx context.Context, workflowID string, body WorkflowNewFileParams, opts ...option.RequestOption) (res *WorkflowNewFileResponse, err error) {
+	opts = slices.Concat(r.options, opts)
+	if workflowID == "" {
+		err = errors.New("missing required workflow_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v2/workflows/%s/files/", url.PathEscape(workflowID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
+	return res, err
+}
+
+// Get processing results for a file collection.
+//
+// Returns the backend collection results with internal metadata stripped. Returns
+// 412 if processing is not yet complete.
+func (r *WorkflowService) GetFileResults(ctx context.Context, collectionID string, query WorkflowGetFileResultsParams, opts ...option.RequestOption) (res *WorkflowGetFileResultsResponse, err error) {
+	opts = slices.Concat(r.options, opts)
+	if query.WorkflowID == "" {
+		err = errors.New("missing required workflow_id parameter")
+		return nil, err
+	}
+	if collectionID == "" {
+		err = errors.New("missing required collection_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v2/workflows/%s/files/%s/results/", url.PathEscape(query.WorkflowID), url.PathEscape(collectionID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
+	return res, err
+}
+
+// List file collections for a workflow.
+func (r *WorkflowService) ListFiles(ctx context.Context, workflowID string, query WorkflowListFilesParams, opts ...option.RequestOption) (res *WorkflowListFilesResponse, err error) {
+	opts = slices.Concat(r.options, opts)
+	if workflowID == "" {
+		err = errors.New("missing required workflow_id parameter")
+		return nil, err
+	}
+	path := fmt.Sprintf("v2/workflows/%s/files/", url.PathEscape(workflowID))
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
+	return res, err
 }
 
 // List extraction runs for a workflow, identified by collection UUID.
@@ -167,6 +208,97 @@ type WorkflowListResponse struct {
 // Returns the unmodified JSON received from the API
 func (r WorkflowListResponse) RawJSON() string { return r.JSON.raw }
 func (r *WorkflowListResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Response from creating a file collection.
+type WorkflowNewFileResponse struct {
+	ID         string                        `json:"id" api:"required"`
+	Files      []WorkflowNewFileResponseFile `json:"files" api:"required"`
+	WorkflowID string                        `json:"workflow_id" api:"required"`
+	Name       string                        `json:"name" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Files       respjson.Field
+		WorkflowID  respjson.Field
+		Name        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowNewFileResponse) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowNewFileResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A single file within a collection.
+type WorkflowNewFileResponseFile struct {
+	Filename string `json:"filename" api:"required"`
+	Status   string `json:"status" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Filename    respjson.Field
+		Status      respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowNewFileResponseFile) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowNewFileResponseFile) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type WorkflowGetFileResultsResponse = any
+
+type WorkflowListFilesResponse struct {
+	Count    int64                             `json:"count" api:"required"`
+	Page     int64                             `json:"page" api:"required"`
+	PageSize int64                             `json:"page_size" api:"required"`
+	Results  []WorkflowListFilesResponseResult `json:"results" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Count       respjson.Field
+		Page        respjson.Field
+		PageSize    respjson.Field
+		Results     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowListFilesResponse) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowListFilesResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A single file collection entry in list responses.
+type WorkflowListFilesResponseResult struct {
+	ID        string    `json:"id" api:"required"`
+	Status    string    `json:"status" api:"required"`
+	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
+	Name      string    `json:"name" api:"nullable"`
+	UpdatedAt time.Time `json:"updated_at" api:"nullable" format:"date-time"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID          respjson.Field
+		Status      respjson.Field
+		CreatedAt   respjson.Field
+		Name        respjson.Field
+		UpdatedAt   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowListFilesResponseResult) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowListFilesResponseResult) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -267,6 +399,49 @@ type WorkflowListParams struct {
 
 // URLQuery serializes [WorkflowListParams]'s query parameters as `url.Values`.
 func (r WorkflowListParams) URLQuery() (v url.Values, err error) {
+	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
+		ArrayFormat:  apiquery.ArrayQueryFormatComma,
+		NestedFormat: apiquery.NestedQueryFormatBrackets,
+	})
+}
+
+type WorkflowNewFileParams struct {
+	Files []string `json:"files,omitzero" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewFileParams) MarshalMultipart() (data []byte, contentType string, err error) {
+	buf := bytes.NewBuffer(nil)
+	writer := multipart.NewWriter(buf)
+	err = apiform.MarshalRoot(r, writer)
+	if err == nil {
+		err = apiform.WriteExtras(writer, r.ExtraFields())
+	}
+	if err != nil {
+		writer.Close()
+		return nil, "", err
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, "", err
+	}
+	return buf.Bytes(), writer.FormDataContentType(), nil
+}
+
+type WorkflowGetFileResultsParams struct {
+	WorkflowID string `path:"workflow_id" api:"required" json:"-"`
+	paramObj
+}
+
+type WorkflowListFilesParams struct {
+	Page     param.Opt[int64] `query:"page,omitzero" json:"-"`
+	PageSize param.Opt[int64] `query:"page_size,omitzero" json:"-"`
+	paramObj
+}
+
+// URLQuery serializes [WorkflowListFilesParams]'s query parameters as
+// `url.Values`.
+func (r WorkflowListFilesParams) URLQuery() (v url.Values, err error) {
 	return apiquery.MarshalWithSettings(r, apiquery.QuerySettings{
 		ArrayFormat:  apiquery.ArrayQueryFormatComma,
 		NestedFormat: apiquery.NestedQueryFormatBrackets,
