@@ -14,7 +14,8 @@ import (
 	"github.com/anyformat-ai/anyformat-go/option"
 )
 
-// File collection management.
+// File collections group uploaded documents and track their extraction progress.
+// Upload files, check status, and retrieve extraction results.
 //
 // FileService contains methods and other services that help with interacting with
 // the anyformat API.
@@ -35,7 +36,10 @@ func NewFileService(opts ...option.RequestOption) (r FileService) {
 	return
 }
 
-// Delete a file collection and all its files.
+// Delete a file collection and all its files permanently.
+//
+// This removes all uploaded files and any extraction results associated with the
+// collection. This action is irreversible.
 func (r *FileService) Delete(ctx context.Context, collectionID string, opts ...option.RequestOption) (err error) {
 	opts = slices.Concat(r.options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
