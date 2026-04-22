@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"slices"
 
+	"github.com/anyformat-ai/anyformat-go/internal/apijson"
 	"github.com/anyformat-ai/anyformat-go/internal/requestconfig"
 	"github.com/anyformat-ai/anyformat-go/option"
+	"github.com/anyformat-ai/anyformat-go/packages/respjson"
 )
 
-// Health checks.
+// Health check endpoints to verify API availability.
 //
 // HealthService contains methods and other services that help with interacting
 // with the anyformat API.
@@ -32,9 +34,9 @@ func NewHealthService(opts ...option.RequestOption) (r HealthService) {
 	return
 }
 
-// Health check endpoint.
-//
 // Returns 200 OK if the service is running. No authentication required.
+//
+// Use this endpoint to verify API connectivity before making authenticated calls.
 func (r *HealthService) Check(ctx context.Context, opts ...option.RequestOption) (res *HealthCheckResponse, err error) {
 	opts = slices.Concat(r.options, opts)
 	path := "health/"
@@ -42,4 +44,20 @@ func (r *HealthService) Check(ctx context.Context, opts ...option.RequestOption)
 	return res, err
 }
 
-type HealthCheckResponse = any
+// Health check response confirming the API is operational.
+type HealthCheckResponse struct {
+	// Status message. Returns `"ok"` when the service is healthy.
+	Message string `json:"message" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Message     respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r HealthCheckResponse) RawJSON() string { return r.JSON.raw }
+func (r *HealthCheckResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}

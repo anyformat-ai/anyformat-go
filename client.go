@@ -17,11 +17,13 @@ import (
 // directly, and instead use the [NewClient] method instead.
 type Client struct {
 	options []option.RequestOption
-	// Health checks.
+	// Health check endpoints to verify API availability.
 	Health HealthService
-	// Webhook subscriptions for async notifications.
+	// Webhook subscriptions for asynchronous event notifications. Get notified when
+	// extractions complete or fail.
 	Webhooks WebhookService
-	// File collection management.
+	// File collections group uploaded documents and track their extraction progress.
+	// Upload files, check status, and retrieve extraction results.
 	Files     FileService
 	Workflows WorkflowService
 }
