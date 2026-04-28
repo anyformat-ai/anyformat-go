@@ -27,8 +27,8 @@ func TestWebhookNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Webhooks.New(context.TODO(), anyformat.WebhookNewParams{
-		URL:    "https://example.com",
-		Events: []string{"string"},
+		URL:    "https://example.com/webhooks/anyformat",
+		Events: []string{"extraction.completed", "extraction.failed"},
 	})
 	if err != nil {
 		var apierr *anyformat.Error
