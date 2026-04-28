@@ -5,6 +5,7 @@ package anyformat
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"mime/multipart"
@@ -313,7 +314,233 @@ func (r *WorkflowNewFileResponseFile) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-type WorkflowGetFileResultsResponse = any
+// Canonical response shape for the file-collection results endpoint.
+//
+// Returned with HTTP 200 once processing completes. Returns 412 while processing
+// is in progress; poll until 200, or use webhooks.
+type WorkflowGetFileResultsResponse struct {
+	// The file collection's UUID. Same value as the `id` returned by
+	// `POST /v2/workflows/{wid}/run/`.
+	CollectionID string `json:"collection_id" api:"required"`
+	// Extracted fields keyed by field name. `null` for parse-only workflows. Always
+	// present in the response. Each value is either a scalar field (`ExtractedField`)
+	// or a list of object-field rows (`list[dict[str, ExtractedField]]`) for compound
+	// fields like line items.
+	Extraction map[string]WorkflowGetFileResultsResponseExtractionUnion `json:"extraction" api:"nullable"`
+	// Parsed markdown for a file.
+	Parse WorkflowGetFileResultsResponseParse `json:"parse" api:"nullable"`
+	// Link to the AnyFormat dashboard for human review of this collection's results.
+	// `null` if the dashboard URL cannot be constructed (e.g. no files in the
+	// collection, or the deployment has no frontend URL configured).
+	VerificationURL string `json:"verification_url" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		CollectionID    respjson.Field
+		Extraction      respjson.Field
+		Parse           respjson.Field
+		VerificationURL respjson.Field
+		ExtraFields     map[string]respjson.Field
+		raw             string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponse) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// WorkflowGetFileResultsResponseExtractionUnion contains all possible properties
+// and values from [WorkflowGetFileResultsResponseExtractionExtractedField],
+// [[]map[string]WorkflowGetFileResultsResponseExtractionArrayItem].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfMapOfWorkflowGetFileResultsResponseExtractionArrayItemMap]
+type WorkflowGetFileResultsResponseExtractionUnion struct {
+	// This field will be present if the value is a
+	// [[]map[string]WorkflowGetFileResultsResponseExtractionArrayItem] instead of an
+	// object.
+	OfMapOfWorkflowGetFileResultsResponseExtractionArrayItemMap []map[string]WorkflowGetFileResultsResponseExtractionArrayItem `json:",inline"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionExtractedField].
+	Value any `json:"value"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionExtractedField].
+	Confidence float64 `json:"confidence"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionExtractedField].
+	Evidence []WorkflowGetFileResultsResponseExtractionExtractedFieldEvidence `json:"evidence"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionExtractedField].
+	ValueOverride any `json:"value_override"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionExtractedField].
+	VerificationStatus string `json:"verification_status"`
+	JSON               struct {
+		OfMapOfWorkflowGetFileResultsResponseExtractionArrayItemMap respjson.Field
+		Value                                                       respjson.Field
+		Confidence                                                  respjson.Field
+		Evidence                                                    respjson.Field
+		ValueOverride                                               respjson.Field
+		VerificationStatus                                          respjson.Field
+		raw                                                         string
+	} `json:"-"`
+}
+
+func (u WorkflowGetFileResultsResponseExtractionUnion) AsExtractedField() (v WorkflowGetFileResultsResponseExtractionExtractedField) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u WorkflowGetFileResultsResponseExtractionUnion) AsMapOfWorkflowGetFileResultsResponseExtractionArrayItemMap() (v []map[string]WorkflowGetFileResultsResponseExtractionArrayItem) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u WorkflowGetFileResultsResponseExtractionUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *WorkflowGetFileResultsResponseExtractionUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One extracted field's value, confidence, and supporting evidence.
+type WorkflowGetFileResultsResponseExtractionExtractedField struct {
+	// The extracted value. Type depends on the field's `data_type` (string, number,
+	// date, etc.). `null` when extraction could not produce a value.
+	Value any `json:"value" api:"required"`
+	// Model confidence in the extracted value, on a 0-100 scale. `null` when the
+	// backend did not produce a confidence (e.g. manual entry).
+	Confidence float64 `json:"confidence" api:"nullable"`
+	// Source-text snippets the model used to derive this value.
+	Evidence []WorkflowGetFileResultsResponseExtractionExtractedFieldEvidence `json:"evidence"`
+	// A human-supplied override of the extracted `value`, if one was set during
+	// verification. `null` when no override exists.
+	ValueOverride any `json:"value_override"`
+	// Verification state for this datapoint (e.g. `not_verified`, `verified`). `null`
+	// when not yet reviewed.
+	VerificationStatus string `json:"verification_status" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Value              respjson.Field
+		Confidence         respjson.Field
+		Evidence           respjson.Field
+		ValueOverride      respjson.Field
+		VerificationStatus respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtractionExtractedField) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseExtractionExtractedField) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A snippet of source text supporting an extracted value, with the page it came
+// from.
+type WorkflowGetFileResultsResponseExtractionExtractedFieldEvidence struct {
+	// 1-indexed page number where the snippet was found.
+	PageNumber int64 `json:"page_number" api:"required"`
+	// The exact source-text snippet that supports the extracted value.
+	Text string `json:"text" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		PageNumber  respjson.Field
+		Text        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtractionExtractedFieldEvidence) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *WorkflowGetFileResultsResponseExtractionExtractedFieldEvidence) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One extracted field's value, confidence, and supporting evidence.
+type WorkflowGetFileResultsResponseExtractionArrayItem struct {
+	// The extracted value. Type depends on the field's `data_type` (string, number,
+	// date, etc.). `null` when extraction could not produce a value.
+	Value any `json:"value" api:"required"`
+	// Model confidence in the extracted value, on a 0-100 scale. `null` when the
+	// backend did not produce a confidence (e.g. manual entry).
+	Confidence float64 `json:"confidence" api:"nullable"`
+	// Source-text snippets the model used to derive this value.
+	Evidence []WorkflowGetFileResultsResponseExtractionArrayItemEvidence `json:"evidence"`
+	// A human-supplied override of the extracted `value`, if one was set during
+	// verification. `null` when no override exists.
+	ValueOverride any `json:"value_override"`
+	// Verification state for this datapoint (e.g. `not_verified`, `verified`). `null`
+	// when not yet reviewed.
+	VerificationStatus string `json:"verification_status" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Value              respjson.Field
+		Confidence         respjson.Field
+		Evidence           respjson.Field
+		ValueOverride      respjson.Field
+		VerificationStatus respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtractionArrayItem) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseExtractionArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A snippet of source text supporting an extracted value, with the page it came
+// from.
+type WorkflowGetFileResultsResponseExtractionArrayItemEvidence struct {
+	// 1-indexed page number where the snippet was found.
+	PageNumber int64 `json:"page_number" api:"required"`
+	// The exact source-text snippet that supports the extracted value.
+	Text string `json:"text" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		PageNumber  respjson.Field
+		Text        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtractionArrayItemEvidence) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *WorkflowGetFileResultsResponseExtractionArrayItemEvidence) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Parsed markdown for a file.
+type WorkflowGetFileResultsResponseParse struct {
+	// Document content rendered as structured markdown (with `<DOCUMENT>` /
+	// `<section>` tags, embedded images for the `visual` variant). `null` if parsing
+	// failed.
+	Markdown string `json:"markdown" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Markdown    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseParse) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseParse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
 
 type WorkflowListFilesResponse struct {
 	// Total number of items matching the query.
@@ -346,7 +573,8 @@ func (r *WorkflowListFilesResponse) UnmarshalJSON(data []byte) error {
 type WorkflowListFilesResponseResult struct {
 	// Unique identifier of the file collection.
 	ID string `json:"id" api:"required"`
-	// Processing status: `pending`, `processing`, `completed`, or `failed`.
+	// Processing status: `pending`, `queued`, `in_progress`, `processed`, `error`, or
+	// `cancelled`.
 	Status string `json:"status" api:"required"`
 	// Timestamp when the collection was created (ISO 8601).
 	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
@@ -405,7 +633,8 @@ type WorkflowListRunsResponseResult struct {
 	// The collection UUID for this run. Use this ID with
 	// `GET /v2/workflows/{workflow_id}/files/{id}/results/` to fetch results.
 	ID string `json:"id" api:"required"`
-	// Processing status: `pending`, `processing`, `completed`, or `failed`.
+	// Processing status: `pending`, `queued`, `in_progress`, `processed`, `error`, or
+	// `cancelled`.
 	Status string `json:"status" api:"required"`
 	// Timestamp when the run started (ISO 8601).
 	CreatedAt time.Time `json:"created_at" api:"nullable" format:"date-time"`
