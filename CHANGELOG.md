@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.3.0 (2026-04-28)
+
+Full Changelog: [v0.2.0...v0.3.0](https://github.com/anyformat-ai/anyformat-go/compare/v0.2.0...v0.3.0)
+
+### Features
+
+* **api:** api update ([d4c94bc](https://github.com/anyformat-ai/anyformat-go/commit/d4c94bc006af9b47a66728bde417bff6dcc82186))
+* **go:** add default http client with timeout ([22a8c45](https://github.com/anyformat-ai/anyformat-go/commit/22a8c4547606c789c1f98617c56d26dad0beb4fe))
+* support setting headers via env ([58ff979](https://github.com/anyformat-ai/anyformat-go/commit/58ff9798b019a2d30c644b651b8c55e7c6f39c6f))
+
+
+### Chores
+
+* **internal:** more robust bootstrap script ([fa861b3](https://github.com/anyformat-ai/anyformat-go/commit/fa861b3e75e1f6c4839ca6fb4b46df162b38b669))
+
 ## 0.2.0 (2026-04-21)
 
 Full Changelog: [v0.1.0...v0.2.0](https://github.com/anyformat-ai/anyformat-go/compare/v0.1.0...v0.2.0)
