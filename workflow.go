@@ -47,17 +47,19 @@ func NewWorkflowService(opts ...option.RequestOption) (r WorkflowService) {
 // Workflows define what data to extract from documents. After creating a workflow,
 // configure its extraction fields in the
 // [AnyFormat dashboard](https://app.anyformat.ai).
-func (r *WorkflowService) New(ctx context.Context, opts ...option.RequestOption) (res *Workflow, err error) {
-	opts = slices.Concat(r.options, opts)
+func (r *WorkflowService) New(ctx context.Context, body WorkflowNewParams, opts ...option.RequestOption) (res *Workflow, err error) {
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	path := "v2/workflows/"
-	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, nil, &res, opts...)
+	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
 }
 
 // Retrieve a single workflow by its ID, including its configured extraction
 // fields.
 func (r *WorkflowService) Get(ctx context.Context, workflowID string, opts ...option.RequestOption) (res *Workflow, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	if workflowID == "" {
 		err = errors.New("missing required workflow_id parameter")
 		return nil, err
@@ -71,7 +73,8 @@ func (r *WorkflowService) Get(ctx context.Context, workflowID string, opts ...op
 //
 // Workflows can be filtered by status and sorted by any field.
 func (r *WorkflowService) List(ctx context.Context, query WorkflowListParams, opts ...option.RequestOption) (res *WorkflowListResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	path := "v2/workflows/"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, query, &res, opts...)
 	return res, err
@@ -81,7 +84,8 @@ func (r *WorkflowService) List(ctx context.Context, query WorkflowListParams, op
 //
 // This action is irreversible.
 func (r *WorkflowService) Delete(ctx context.Context, workflowID string, opts ...option.RequestOption) (err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	if workflowID == "" {
 		err = errors.New("missing required workflow_id parameter")
@@ -100,7 +104,8 @@ func (r *WorkflowService) Delete(ctx context.Context, workflowID string, opts ..
 //
 // Supported file types: PDF, PNG, JPG, TIFF, TXT, DOCX, XLSX, CSV, and more.
 func (r *WorkflowService) NewFile(ctx context.Context, workflowID string, body WorkflowNewFileParams, opts ...option.RequestOption) (res *WorkflowNewFileResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	if workflowID == "" {
 		err = errors.New("missing required workflow_id parameter")
 		return nil, err
@@ -121,7 +126,8 @@ func (r *WorkflowService) NewFile(ctx context.Context, workflowID string, body W
 // this endpoint until you receive a 200 response, or use webhooks
 // (`extraction.completed` event) to be notified when processing finishes.
 func (r *WorkflowService) GetFileResults(ctx context.Context, collectionID string, query WorkflowGetFileResultsParams, opts ...option.RequestOption) (res *WorkflowGetFileResultsResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	if query.WorkflowID == "" {
 		err = errors.New("missing required workflow_id parameter")
 		return nil, err
@@ -141,7 +147,8 @@ func (r *WorkflowService) GetFileResults(ctx context.Context, collectionID strin
 // has a status indicating the extraction progress: `pending`, `processing`,
 // `completed`, or `failed`.
 func (r *WorkflowService) ListFiles(ctx context.Context, workflowID string, query WorkflowListFilesParams, opts ...option.RequestOption) (res *WorkflowListFilesResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	if workflowID == "" {
 		err = errors.New("missing required workflow_id parameter")
 		return nil, err
@@ -157,7 +164,8 @@ func (r *WorkflowService) ListFiles(ctx context.Context, workflowID string, quer
 // Use the run's `id` (collection UUID) with
 // `GET /v2/workflows/{workflow_id}/files/{id}/results/` to fetch detailed results.
 func (r *WorkflowService) ListRuns(ctx context.Context, workflowID string, query WorkflowListRunsParams, opts ...option.RequestOption) (res *WorkflowListRunsResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	if workflowID == "" {
 		err = errors.New("missing required workflow_id parameter")
 		return nil, err
@@ -177,7 +185,8 @@ func (r *WorkflowService) ListRuns(ctx context.Context, workflowID string, query
 // Provide the file as a binary upload in the `file` field, or send raw text in the
 // `text` field for text-only extraction.
 func (r *WorkflowService) Run(ctx context.Context, workflowID string, body WorkflowRunParams, opts ...option.RequestOption) (res *WorkflowRunResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	if workflowID == "" {
 		err = errors.New("missing required workflow_id parameter")
 		return nil, err
@@ -193,7 +202,8 @@ func (r *WorkflowService) Run(ctx context.Context, workflowID string, body Workf
 // upload-and-extract in one step, use `POST /v2/workflows/{workflow_id}/run/`
 // instead.
 func (r *WorkflowService) Upload(ctx context.Context, workflowID string, body WorkflowUploadParams, opts ...option.RequestOption) (res *WorkflowUploadResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	if workflowID == "" {
 		err = errors.New("missing required workflow_id parameter")
 		return nil, err
@@ -703,6 +713,24 @@ type WorkflowUploadResponse struct {
 // Returns the unmodified JSON received from the API
 func (r WorkflowUploadResponse) RawJSON() string { return r.JSON.raw }
 func (r *WorkflowUploadResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+type WorkflowNewParams struct {
+	// Field definitions
+	Fields []map[string]any `json:"fields,omitzero" api:"required"`
+	// Workflow name
+	Name string `json:"name" api:"required"`
+	// Workflow description
+	Description param.Opt[string] `json:"description,omitzero"`
+	paramObj
+}
+
+func (r WorkflowNewParams) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParams
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParams) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
