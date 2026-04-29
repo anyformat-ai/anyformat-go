@@ -58,13 +58,10 @@ import (
 	"fmt"
 
 	"github.com/anyformat-ai/anyformat-go"
-	"github.com/anyformat-ai/anyformat-go/option"
 )
 
 func main() {
-	client := anyformat.NewClient(
-		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("ANYFORMAT_API_KEY")
-	)
+	client := anyformat.NewClient()
 	response, err := client.Workflows.Run(
 		context.TODO(),
 		"0686bb97-8c30-70f0-8000-97669e000eb8",

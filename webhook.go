@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"slices"
+	"time"
 
 	"github.com/anyformat-ai/anyformat-go/internal/apijson"
 	"github.com/anyformat-ai/anyformat-go/internal/requestconfig"
@@ -50,7 +51,8 @@ func NewWebhookService(opts ...option.RequestOption) (r WebhookService) {
 // - `extraction.completed` — fired when a file extraction finishes successfully.
 // - `extraction.failed` — fired when a file extraction fails.
 func (r *WebhookService) New(ctx context.Context, body WebhookNewParams, opts ...option.RequestOption) (res *WebhookNewResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	path := "v2/webhooks/"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodPost, path, body, &res, opts...)
 	return res, err
@@ -61,7 +63,8 @@ func (r *WebhookService) New(ctx context.Context, body WebhookNewParams, opts ..
 // Returns a list of webhooks. Secrets are excluded from the list response for
 // security — they are only returned once, when the webhook is created.
 func (r *WebhookService) List(ctx context.Context, opts ...option.RequestOption) (res *[]WebhookListResponse, err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	path := "v2/webhooks/"
 	err = requestconfig.ExecuteNewRequest(ctx, http.MethodGet, path, nil, &res, opts...)
 	return res, err
@@ -72,7 +75,8 @@ func (r *WebhookService) List(ctx context.Context, opts ...option.RequestOption)
 // After deletion, AnyFormat will stop sending events to the webhook URL. This
 // action is irreversible.
 func (r *WebhookService) Delete(ctx context.Context, webhookID string, opts ...option.RequestOption) (err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	if webhookID == "" {
 		err = errors.New("missing required webhook_id parameter")
@@ -89,7 +93,7 @@ type WebhookNewResponse struct {
 	// Unique identifier of the webhook.
 	ID string `json:"id" api:"required"`
 	// Timestamp when the webhook was created (ISO 8601).
-	CreatedAt string `json:"created_at" api:"required"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Event types this webhook is subscribed to.
 	Events []string `json:"events" api:"required"`
 	// Whether the webhook is currently active and receiving events.
@@ -98,7 +102,7 @@ type WebhookNewResponse struct {
 	// authentic. **Store securely — this value is only shown once at creation time.**
 	Secret string `json:"secret" api:"required"`
 	// The URL receiving webhook events.
-	URL string `json:"url" api:"required"`
+	URL string `json:"url" api:"required" format:"uri"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
@@ -123,13 +127,13 @@ type WebhookListResponse struct {
 	// Unique identifier of the webhook.
 	ID string `json:"id" api:"required"`
 	// Timestamp when the webhook was created (ISO 8601).
-	CreatedAt string `json:"created_at" api:"required"`
+	CreatedAt time.Time `json:"created_at" api:"required" format:"date-time"`
 	// Event types this webhook is subscribed to.
 	Events []string `json:"events" api:"required"`
 	// Whether the webhook is currently active.
 	IsActive bool `json:"is_active" api:"required"`
 	// The URL receiving webhook events.
-	URL string `json:"url" api:"required"`
+	URL string `json:"url" api:"required" format:"uri"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
