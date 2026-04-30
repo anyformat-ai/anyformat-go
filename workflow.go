@@ -122,9 +122,19 @@ func (r *WorkflowService) NewFile(ctx context.Context, workflowID string, body W
 // includes a `verification_url` linking to the AnyFormat dashboard for human
 // review.
 //
-// Returns **412 Precondition Failed** if the extraction is still in progress. Poll
-// this endpoint until you receive a 200 response, or use webhooks
-// (`extraction.completed` event) to be notified when processing finishes.
+// Possible non-200 responses:
+//
+//   - **412 `PRECONDITION_FAILED`** — extraction still in progress; retry with
+//     backoff.
+//   - **422 `EXTRACTION_FAILED`** — extraction did not complete successfully;
+//     terminal. Polling will not transition the collection out of this state.
+//     Possible next steps: review the document, retry the upload, or open the
+//     collection in the AnyFormat dashboard for more context.
+//   - **422 `EXTRACTION_CANCELLED`** — extraction was cancelled; terminal. Possible
+//     next steps: review the document, retry the upload, or open the collection in
+//     the AnyFormat dashboard.
+//
+// Use webhooks (`extraction.completed` event) to avoid polling.
 func (r *WorkflowService) GetFileResults(ctx context.Context, collectionID string, query WorkflowGetFileResultsParams, opts ...option.RequestOption) (res *WorkflowGetFileResultsResponse, err error) {
 	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
 	opts = slices.Concat(preClientOpts, r.options, opts)
