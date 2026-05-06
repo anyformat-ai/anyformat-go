@@ -342,13 +342,23 @@ type WorkflowGetFileResultsResponse struct {
 	// The file collection's UUID. Same value as the `id` returned by
 	// `POST /v2/workflows/{wid}/run/`.
 	CollectionID string `json:"collection_id" api:"required"`
-	// Extracted fields keyed by field name. `null` for parse-only workflows. Always
-	// present in the response. Each value is either a scalar field (`ExtractedField`)
-	// or a list of object-field rows (`list[dict[str, ExtractedField]]`) for compound
-	// fields like line items.
+	// Per-classifier-node verdicts. Empty when the workflow has no classifier.
+	Classifications []WorkflowGetFileResultsResponseClassification `json:"classifications"`
+	// **Deprecated** — use `extractions` instead. Extracted fields keyed by field
+	// name, populated only for linear workflows (single extract node, no splitter).
+	// `null` for split workflows; read `extractions[]` instead.
+	//
+	// Deprecated: deprecated
 	Extraction map[string]WorkflowGetFileResultsResponseExtractionUnion `json:"extraction" api:"nullable"`
+	// Flat list of extraction datapoints. Linear workflows produce one entry with
+	// `split_name=null` and `partition=null`. Split workflows produce one entry per
+	// (split, partition). Empty when no extraction has run yet.
+	Extractions []WorkflowGetFileResultsResponseExtraction `json:"extractions"`
 	// Parsed markdown for a file.
 	Parse WorkflowGetFileResultsResponseParse `json:"parse" api:"nullable"`
+	// Splitter output: category-level geometry with optional partitions. Empty when
+	// the workflow has no splitter.
+	Splits []WorkflowGetFileResultsResponseSplit `json:"splits"`
 	// Link to the AnyFormat dashboard for human review of this collection's results.
 	// `null` if the dashboard URL cannot be constructed (e.g. no files in the
 	// collection, or the deployment has no frontend URL configured).
@@ -356,8 +366,11 @@ type WorkflowGetFileResultsResponse struct {
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		CollectionID    respjson.Field
+		Classifications respjson.Field
 		Extraction      respjson.Field
+		Extractions     respjson.Field
 		Parse           respjson.Field
+		Splits          respjson.Field
 		VerificationURL respjson.Field
 		ExtraFields     map[string]respjson.Field
 		raw             string
@@ -367,6 +380,31 @@ type WorkflowGetFileResultsResponse struct {
 // Returns the unmodified JSON received from the API
 func (r WorkflowGetFileResultsResponse) RawJSON() string { return r.JSON.raw }
 func (r *WorkflowGetFileResultsResponse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One classifier verdict for the collection.
+type WorkflowGetFileResultsResponseClassification struct {
+	// The category the document was classified as.
+	Category string `json:"category" api:"required"`
+	// 0-100 model confidence in the verdict.
+	Confidence float64 `json:"confidence" api:"required"`
+	// Free-form evidence text (the snippets the classifier cited). `null` when none
+	// captured.
+	Evidence string `json:"evidence" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Category    respjson.Field
+		Confidence  respjson.Field
+		Evidence    respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseClassification) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseClassification) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -542,6 +580,209 @@ func (r *WorkflowGetFileResultsResponseExtractionArrayItemEvidence) UnmarshalJSO
 	return apijson.UnmarshalRoot(data, r)
 }
 
+// One unit of extracted data. For linear (parse->extract) workflows there is
+// exactly one entry with `split_name=null` and `partition=null`. For split
+// workflows there is one entry per (split, partition) pair; join with `splits[]`
+// by `split_name` to look up geometry.
+type WorkflowGetFileResultsResponseExtraction struct {
+	// Extracted fields keyed by field name. Same shape as the legacy top-level
+	// `extraction`.
+	Fields map[string]WorkflowGetFileResultsResponseExtractionFieldUnion `json:"fields" api:"required"`
+	// The partition value within the split. `null` when the split has no partitions.
+	Partition string `json:"partition" api:"nullable"`
+	// The split category this extraction belongs to. `null` for linear workflows.
+	SplitName string `json:"split_name" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Fields      respjson.Field
+		Partition   respjson.Field
+		SplitName   respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtraction) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseExtraction) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// WorkflowGetFileResultsResponseExtractionFieldUnion contains all possible
+// properties and values from
+// [WorkflowGetFileResultsResponseExtractionFieldExtractedField],
+// [[]map[string]WorkflowGetFileResultsResponseExtractionFieldArrayItem].
+//
+// Use the methods beginning with 'As' to cast the union to one of its variants.
+//
+// If the underlying value is not a json object, one of the following properties
+// will be valid: OfMapOfWorkflowGetFileResultsResponseExtractionFieldArrayItemMap]
+type WorkflowGetFileResultsResponseExtractionFieldUnion struct {
+	// This field will be present if the value is a
+	// [[]map[string]WorkflowGetFileResultsResponseExtractionFieldArrayItem] instead of
+	// an object.
+	OfMapOfWorkflowGetFileResultsResponseExtractionFieldArrayItemMap []map[string]WorkflowGetFileResultsResponseExtractionFieldArrayItem `json:",inline"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionFieldExtractedField].
+	Value any `json:"value"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionFieldExtractedField].
+	Confidence float64 `json:"confidence"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionFieldExtractedField].
+	Evidence []WorkflowGetFileResultsResponseExtractionFieldExtractedFieldEvidence `json:"evidence"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionFieldExtractedField].
+	ValueOverride any `json:"value_override"`
+	// This field is from variant
+	// [WorkflowGetFileResultsResponseExtractionFieldExtractedField].
+	VerificationStatus string `json:"verification_status"`
+	JSON               struct {
+		OfMapOfWorkflowGetFileResultsResponseExtractionFieldArrayItemMap respjson.Field
+		Value                                                            respjson.Field
+		Confidence                                                       respjson.Field
+		Evidence                                                         respjson.Field
+		ValueOverride                                                    respjson.Field
+		VerificationStatus                                               respjson.Field
+		raw                                                              string
+	} `json:"-"`
+}
+
+func (u WorkflowGetFileResultsResponseExtractionFieldUnion) AsExtractedField() (v WorkflowGetFileResultsResponseExtractionFieldExtractedField) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+func (u WorkflowGetFileResultsResponseExtractionFieldUnion) AsMapOfWorkflowGetFileResultsResponseExtractionFieldArrayItemMap() (v []map[string]WorkflowGetFileResultsResponseExtractionFieldArrayItem) {
+	apijson.UnmarshalRoot(json.RawMessage(u.JSON.raw), &v)
+	return
+}
+
+// Returns the unmodified JSON received from the API
+func (u WorkflowGetFileResultsResponseExtractionFieldUnion) RawJSON() string { return u.JSON.raw }
+
+func (r *WorkflowGetFileResultsResponseExtractionFieldUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One extracted field's value, confidence, and supporting evidence.
+type WorkflowGetFileResultsResponseExtractionFieldExtractedField struct {
+	// The extracted value. Type depends on the field's `data_type` (string, number,
+	// date, etc.). `null` when extraction could not produce a value.
+	Value any `json:"value" api:"required"`
+	// Model confidence in the extracted value, on a 0-100 scale. `null` when the
+	// backend did not produce a confidence (e.g. manual entry).
+	Confidence float64 `json:"confidence" api:"nullable"`
+	// Source-text snippets the model used to derive this value.
+	Evidence []WorkflowGetFileResultsResponseExtractionFieldExtractedFieldEvidence `json:"evidence"`
+	// A human-supplied override of the extracted `value`, if one was set during
+	// verification. `null` when no override exists.
+	ValueOverride any `json:"value_override"`
+	// Verification state for this datapoint (e.g. `not_verified`, `verified`). `null`
+	// when not yet reviewed.
+	VerificationStatus string `json:"verification_status" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Value              respjson.Field
+		Confidence         respjson.Field
+		Evidence           respjson.Field
+		ValueOverride      respjson.Field
+		VerificationStatus respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtractionFieldExtractedField) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *WorkflowGetFileResultsResponseExtractionFieldExtractedField) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A snippet of source text supporting an extracted value, with the page it came
+// from.
+type WorkflowGetFileResultsResponseExtractionFieldExtractedFieldEvidence struct {
+	// 1-indexed page number where the snippet was found.
+	PageNumber int64 `json:"page_number" api:"required"`
+	// The exact source-text snippet that supports the extracted value.
+	Text string `json:"text" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		PageNumber  respjson.Field
+		Text        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtractionFieldExtractedFieldEvidence) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *WorkflowGetFileResultsResponseExtractionFieldExtractedFieldEvidence) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One extracted field's value, confidence, and supporting evidence.
+type WorkflowGetFileResultsResponseExtractionFieldArrayItem struct {
+	// The extracted value. Type depends on the field's `data_type` (string, number,
+	// date, etc.). `null` when extraction could not produce a value.
+	Value any `json:"value" api:"required"`
+	// Model confidence in the extracted value, on a 0-100 scale. `null` when the
+	// backend did not produce a confidence (e.g. manual entry).
+	Confidence float64 `json:"confidence" api:"nullable"`
+	// Source-text snippets the model used to derive this value.
+	Evidence []WorkflowGetFileResultsResponseExtractionFieldArrayItemEvidence `json:"evidence"`
+	// A human-supplied override of the extracted `value`, if one was set during
+	// verification. `null` when no override exists.
+	ValueOverride any `json:"value_override"`
+	// Verification state for this datapoint (e.g. `not_verified`, `verified`). `null`
+	// when not yet reviewed.
+	VerificationStatus string `json:"verification_status" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Value              respjson.Field
+		Confidence         respjson.Field
+		Evidence           respjson.Field
+		ValueOverride      respjson.Field
+		VerificationStatus respjson.Field
+		ExtraFields        map[string]respjson.Field
+		raw                string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtractionFieldArrayItem) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseExtractionFieldArrayItem) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A snippet of source text supporting an extracted value, with the page it came
+// from.
+type WorkflowGetFileResultsResponseExtractionFieldArrayItemEvidence struct {
+	// 1-indexed page number where the snippet was found.
+	PageNumber int64 `json:"page_number" api:"required"`
+	// The exact source-text snippet that supports the extracted value.
+	Text string `json:"text" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		PageNumber  respjson.Field
+		Text        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseExtractionFieldArrayItemEvidence) RawJSON() string {
+	return r.JSON.raw
+}
+func (r *WorkflowGetFileResultsResponseExtractionFieldArrayItemEvidence) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
 // Parsed markdown for a file.
 type WorkflowGetFileResultsResponseParse struct {
 	// Document content rendered as structured markdown (with `<DOCUMENT>` /
@@ -559,6 +800,105 @@ type WorkflowGetFileResultsResponseParse struct {
 // Returns the unmodified JSON received from the API
 func (r WorkflowGetFileResultsResponseParse) RawJSON() string { return r.JSON.raw }
 func (r *WorkflowGetFileResultsResponseParse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A category-level split: which pages of which files fall under it, plus any
+// partitions inside it. Extraction data lives under `extractions[]` — join by
+// `split_name`.
+type WorkflowGetFileResultsResponseSplit struct {
+	// 0-100 aggregate confidence (min across partitions).
+	Confidence int64 `json:"confidence" api:"required"`
+	// Per-file page lists, union of all partitions.
+	Files []WorkflowGetFileResultsResponseSplitFile `json:"files" api:"required"`
+	// The split's category name.
+	Name       string                                         `json:"name" api:"required"`
+	Partitions []WorkflowGetFileResultsResponseSplitPartition `json:"partitions"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Confidence  respjson.Field
+		Files       respjson.Field
+		Name        respjson.Field
+		Partitions  respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseSplit) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseSplit) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A file's contribution of pages to a split or partition. 1-indexed.
+type WorkflowGetFileResultsResponseSplitFile struct {
+	// The file's UUID.
+	FileID string `json:"file_id" api:"required"`
+	// The file's display name.
+	FileName string `json:"file_name" api:"required"`
+	// 1-indexed page numbers from this file.
+	Pages []int64 `json:"pages" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		FileID      respjson.Field
+		FileName    respjson.Field
+		Pages       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseSplitFile) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseSplitFile) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A partition value within a split (e.g. `1234-5678` under `Account Holdings`).
+type WorkflowGetFileResultsResponseSplitPartition struct {
+	// 0-100 minimum confidence across the partition's ranges.
+	Confidence int64                                              `json:"confidence" api:"required"`
+	Files      []WorkflowGetFileResultsResponseSplitPartitionFile `json:"files" api:"required"`
+	// The partition value (free-form string).
+	Name string `json:"name" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Confidence  respjson.Field
+		Files       respjson.Field
+		Name        respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseSplitPartition) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseSplitPartition) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A file's contribution of pages to a split or partition. 1-indexed.
+type WorkflowGetFileResultsResponseSplitPartitionFile struct {
+	// The file's UUID.
+	FileID string `json:"file_id" api:"required"`
+	// The file's display name.
+	FileName string `json:"file_name" api:"required"`
+	// 1-indexed page numbers from this file.
+	Pages []int64 `json:"pages" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		FileID      respjson.Field
+		FileName    respjson.Field
+		Pages       respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseSplitPartitionFile) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseSplitPartitionFile) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
