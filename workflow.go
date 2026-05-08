@@ -1067,8 +1067,8 @@ func (r *WorkflowUploadResponse) UnmarshalJSON(data []byte) error {
 }
 
 type WorkflowNewParams struct {
-	// Field definitions
-	Fields []map[string]any `json:"fields,omitzero" api:"required"`
+	// Field definitions. Each entry's shape is determined by its `data_type`.
+	Fields []any `json:"fields,omitzero" api:"required"`
 	// Workflow name
 	Name string `json:"name" api:"required"`
 	// Workflow description
