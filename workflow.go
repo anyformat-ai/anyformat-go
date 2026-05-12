@@ -21,6 +21,7 @@ import (
 	"github.com/anyformat-ai/anyformat-go/option"
 	"github.com/anyformat-ai/anyformat-go/packages/param"
 	"github.com/anyformat-ai/anyformat-go/packages/respjson"
+	"github.com/anyformat-ai/anyformat-go/shared/constant"
 )
 
 // WorkflowService contains methods and other services that help with interacting
@@ -789,17 +790,116 @@ type WorkflowGetFileResultsResponseParse struct {
 	// `<section>` tags, embedded images for the `visual` variant). `null` if parsing
 	// failed.
 	Markdown string `json:"markdown" api:"required"`
+	// Structured per-block representation of the parsed document — derived from
+	// `markdown` at retrieval time. One entry per `<section>` in document order, with
+	// type-specific structured data (`rows` for tables, `image_base64` for pictures)
+	// surfaced as first-class fields so consumers don't have to HTML-parse.
+	Blocks []WorkflowGetFileResultsResponseParseBlock `json:"blocks"`
+	// Document-level YOLO layout confidence on a 0-100 scale, char-weighted mean
+	// across all blocks. `null` if no annotated sections.
+	LayoutConfidence float64 `json:"layout_confidence" api:"nullable"`
+	// Document-level parse confidence on a 0-100 scale, char-weighted mean of
+	// per-block LLM logprob scores. `null` when no blocks have logprob-based
+	// confidence.
+	ParseConfidence float64 `json:"parse_confidence" api:"nullable"`
+	// Plain markdown text with structural tags stripped — `<DOCUMENT>`, `<section>`,
+	// `<img>`, and `<figure-content>` wrappers removed, leaving the human-readable
+	// content only. Useful when feeding the parsed output into an LLM or a search
+	// index that doesn't need the block-level metadata. `null` if `markdown` is null.
+	Text string `json:"text" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
-		Markdown    respjson.Field
-		ExtraFields map[string]respjson.Field
-		raw         string
+		Markdown         respjson.Field
+		Blocks           respjson.Field
+		LayoutConfidence respjson.Field
+		ParseConfidence  respjson.Field
+		Text             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
 	} `json:"-"`
 }
 
 // Returns the unmodified JSON received from the API
 func (r WorkflowGetFileResultsResponseParse) RawJSON() string { return r.JSON.raw }
 func (r *WorkflowGetFileResultsResponseParse) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// One semantic block of a parsed document — a structured alternative to
+// pattern-matching against `<section>` tags inside `markdown`.
+//
+// All blocks expose the common fields (`id`, `type`, `page`, `bbox`, `confidence`,
+// `content`). Type-specific structured data lives in the optional fields (`rows`
+// for tables, `image_base64` for pictures). Consumers can switch on `type` to
+// access the per-type fields, or treat `content` as the universal fallback.
+type WorkflowGetFileResultsResponseParseBlock struct {
+	// Stable block identifier in the form `p<page>_b<index>`.
+	ID string `json:"id" api:"required"`
+	// Normalised bounding box in [0, 1] page coordinates with keys
+	// `x0`/`y0`/`x1`/`y1`.
+	Bbox map[string]float64 `json:"bbox" api:"required"`
+	// Raw section body — markdown for text/title blocks, HTML for tables,
+	// `<figure-content>` for pictures.
+	Content string `json:"content" api:"required"`
+	// 0-100 YOLO layout detection confidence for this block.
+	LayoutConfidence float64 `json:"layout_confidence" api:"required"`
+	// 1-indexed page number this block belongs to.
+	Page int64 `json:"page" api:"required"`
+	// Semantic type: `text`, `title`, `section-header`, `table`, `picture`, `other`.
+	Type string `json:"type" api:"required"`
+	// Hyperlinks found in the content via `[text](uri)` markdown syntax.
+	Hyperlinks []WorkflowGetFileResultsResponseParseBlockHyperlink `json:"hyperlinks"`
+	// Inline base64-encoded cropped image for `type=picture` blocks when the response
+	// was assembled from the visual markdown variant. `null` for non-picture blocks or
+	// when the raw variant was used.
+	ImageBase64 string `json:"image_base64" api:"nullable"`
+	// 0-100 parse confidence calibrated from LLM logprobs. `null` when logprobs were
+	// unavailable (e.g. text-bytes strategy).
+	ParseConfidence float64 `json:"parse_confidence" api:"nullable"`
+	// 2D array of table cells for `type=table` blocks — each cell is
+	// `{cell_id, text}`. `null` for non-table blocks.
+	Rows [][]map[string]string `json:"rows" api:"nullable"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		ID               respjson.Field
+		Bbox             respjson.Field
+		Content          respjson.Field
+		LayoutConfidence respjson.Field
+		Page             respjson.Field
+		Type             respjson.Field
+		Hyperlinks       respjson.Field
+		ImageBase64      respjson.Field
+		ParseConfidence  respjson.Field
+		Rows             respjson.Field
+		ExtraFields      map[string]respjson.Field
+		raw              string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseParseBlock) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseParseBlock) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// A hyperlink found inside a block's content.
+type WorkflowGetFileResultsResponseParseBlockHyperlink struct {
+	// The display text of the link.
+	Text string `json:"text" api:"required"`
+	// The link target (URL, mailto:, etc.).
+	Uri string `json:"uri" api:"required"`
+	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
+	JSON struct {
+		Text        respjson.Field
+		Uri         respjson.Field
+		ExtraFields map[string]respjson.Field
+		raw         string
+	} `json:"-"`
+}
+
+// Returns the unmodified JSON received from the API
+func (r WorkflowGetFileResultsResponseParseBlockHyperlink) RawJSON() string { return r.JSON.raw }
+func (r *WorkflowGetFileResultsResponseParseBlockHyperlink) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1068,7 +1168,7 @@ func (r *WorkflowUploadResponse) UnmarshalJSON(data []byte) error {
 
 type WorkflowNewParams struct {
 	// Field definitions. Each entry's shape is determined by its `data_type`.
-	Fields []any `json:"fields,omitzero" api:"required"`
+	Fields []WorkflowNewParamsFieldUnion `json:"fields,omitzero" api:"required"`
 	// Workflow name
 	Name string `json:"name" api:"required"`
 	// Workflow description
@@ -1081,6 +1181,473 @@ func (r WorkflowNewParams) MarshalJSON() (data []byte, err error) {
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *WorkflowNewParams) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type WorkflowNewParamsFieldUnion struct {
+	OfString      *WorkflowNewParamsFieldString      `json:",omitzero,inline"`
+	OfInteger     *WorkflowNewParamsFieldInteger     `json:",omitzero,inline"`
+	OfFloat       *WorkflowNewParamsFieldFloat       `json:",omitzero,inline"`
+	OfBoolean     *WorkflowNewParamsFieldBoolean     `json:",omitzero,inline"`
+	OfDate        *WorkflowNewParamsFieldDate        `json:",omitzero,inline"`
+	OfDatetime    *WorkflowNewParamsFieldDatetime    `json:",omitzero,inline"`
+	OfEnum        *WorkflowNewParamsFieldEnum        `json:",omitzero,inline"`
+	OfMultiSelect *WorkflowNewParamsFieldMultiSelect `json:",omitzero,inline"`
+	OfObject      *WorkflowNewParamsFieldObject      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u WorkflowNewParamsFieldUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString,
+		u.OfInteger,
+		u.OfFloat,
+		u.OfBoolean,
+		u.OfDate,
+		u.OfDatetime,
+		u.OfEnum,
+		u.OfMultiSelect,
+		u.OfObject)
+}
+func (u *WorkflowNewParamsFieldUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func init() {
+	apijson.RegisterUnion[WorkflowNewParamsFieldUnion](
+		"data_type",
+		apijson.Discriminator[WorkflowNewParamsFieldString]("string"),
+		apijson.Discriminator[WorkflowNewParamsFieldInteger]("integer"),
+		apijson.Discriminator[WorkflowNewParamsFieldFloat]("float"),
+		apijson.Discriminator[WorkflowNewParamsFieldBoolean]("boolean"),
+		apijson.Discriminator[WorkflowNewParamsFieldDate]("date"),
+		apijson.Discriminator[WorkflowNewParamsFieldDatetime]("datetime"),
+		apijson.Discriminator[WorkflowNewParamsFieldEnum]("enum"),
+		apijson.Discriminator[WorkflowNewParamsFieldMultiSelect]("multi_select"),
+		apijson.Discriminator[WorkflowNewParamsFieldObject]("object"),
+	)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldString struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "string".
+	DataType constant.String `json:"data_type" default:"string"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldString) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldString
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldString) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldInteger struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "integer".
+	DataType constant.Integer `json:"data_type" default:"integer"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldInteger) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldInteger
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldInteger) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldFloat struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "float".
+	DataType constant.Float `json:"data_type" default:"float"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldFloat) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldFloat
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldFloat) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldBoolean struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "boolean".
+	DataType constant.Boolean `json:"data_type" default:"boolean"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldBoolean) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldBoolean
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldBoolean) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldDate struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "date".
+	DataType constant.Date `json:"data_type" default:"date"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldDate) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldDate
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldDate) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldDatetime struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "datetime".
+	DataType constant.Datetime `json:"data_type" default:"datetime"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldDatetime) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldDatetime
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldDatetime) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, EnumOptions, Name are required.
+type WorkflowNewParamsFieldEnum struct {
+	// Free-form description shown to the extraction model.
+	Description string                                 `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsFieldEnumEnumOption `json:"enum_options,omitzero" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "enum".
+	DataType constant.Enum `json:"data_type" default:"enum"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldEnum) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldEnum
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldEnum) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Description, Name are required.
+type WorkflowNewParamsFieldEnumEnumOption struct {
+	// Free-form description shown to the model.
+	Description string `json:"description" api:"required"`
+	Name        string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldEnumEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldEnumEnumOption
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldEnumEnumOption) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, EnumOptions, Name are required.
+type WorkflowNewParamsFieldMultiSelect struct {
+	// Free-form description shown to the extraction model.
+	Description string                                        `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsFieldMultiSelectEnumOption `json:"enum_options,omitzero" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "multi_select".
+	DataType constant.MultiSelect `json:"data_type" default:"multi_select"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldMultiSelect) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldMultiSelect
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldMultiSelect) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Description, Name are required.
+type WorkflowNewParamsFieldMultiSelectEnumOption struct {
+	// Free-form description shown to the model.
+	Description string `json:"description" api:"required"`
+	Name        string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldMultiSelectEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldMultiSelectEnumOption
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldMultiSelectEnumOption) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name, NestedFields are required.
+type WorkflowNewParamsFieldObject struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name         string                                         `json:"name" api:"required"`
+	NestedFields []WorkflowNewParamsFieldObjectNestedFieldUnion `json:"nested_fields,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "object".
+	DataType constant.Object `json:"data_type" default:"object"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObject) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type WorkflowNewParamsFieldObjectNestedFieldUnion struct {
+	OfStringFieldDef      *WorkflowNewParamsFieldObjectNestedFieldStringFieldDef      `json:",omitzero,inline"`
+	OfIntegerFieldDef     *WorkflowNewParamsFieldObjectNestedFieldIntegerFieldDef     `json:",omitzero,inline"`
+	OfFloatFieldDef       *WorkflowNewParamsFieldObjectNestedFieldFloatFieldDef       `json:",omitzero,inline"`
+	OfBooleanFieldDef     *WorkflowNewParamsFieldObjectNestedFieldBooleanFieldDef     `json:",omitzero,inline"`
+	OfDateFieldDef        *WorkflowNewParamsFieldObjectNestedFieldDateFieldDef        `json:",omitzero,inline"`
+	OfDatetimeFieldDef    *WorkflowNewParamsFieldObjectNestedFieldDatetimeFieldDef    `json:",omitzero,inline"`
+	OfEnumFieldDef        *WorkflowNewParamsFieldObjectNestedFieldEnumFieldDef        `json:",omitzero,inline"`
+	OfMultiSelectFieldDef *WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDef `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u WorkflowNewParamsFieldObjectNestedFieldUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfStringFieldDef,
+		u.OfIntegerFieldDef,
+		u.OfFloatFieldDef,
+		u.OfBooleanFieldDef,
+		u.OfDateFieldDef,
+		u.OfDatetimeFieldDef,
+		u.OfEnumFieldDef,
+		u.OfMultiSelectFieldDef)
+}
+func (u *WorkflowNewParamsFieldObjectNestedFieldUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldStringFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "string".
+	DataType constant.String `json:"data_type" default:"string"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldStringFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldStringFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldStringFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldIntegerFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "integer".
+	DataType constant.Integer `json:"data_type" default:"integer"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldIntegerFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldIntegerFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldIntegerFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldFloatFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "float".
+	DataType constant.Float `json:"data_type" default:"float"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldFloatFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldFloatFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldFloatFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldBooleanFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "boolean".
+	DataType constant.Boolean `json:"data_type" default:"boolean"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldBooleanFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldBooleanFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldBooleanFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldDateFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "date".
+	DataType constant.Date `json:"data_type" default:"date"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldDateFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldDateFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldDateFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldDatetimeFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "datetime".
+	DataType constant.Datetime `json:"data_type" default:"datetime"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldDatetimeFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldDatetimeFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldDatetimeFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, EnumOptions, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldEnumFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string                                                          `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsFieldObjectNestedFieldEnumFieldDefEnumOption `json:"enum_options,omitzero" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "enum".
+	DataType constant.Enum `json:"data_type" default:"enum"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldEnumFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldEnumFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldEnumFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Description, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldEnumFieldDefEnumOption struct {
+	// Free-form description shown to the model.
+	Description string `json:"description" api:"required"`
+	Name        string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldEnumFieldDefEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldEnumFieldDefEnumOption
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldEnumFieldDefEnumOption) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, EnumOptions, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string                                                                 `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDefEnumOption `json:"enum_options,omitzero" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "multi_select".
+	DataType constant.MultiSelect `json:"data_type" default:"multi_select"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Description, Name are required.
+type WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDefEnumOption struct {
+	// Free-form description shown to the model.
+	Description string `json:"description" api:"required"`
+	Name        string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDefEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDefEnumOption
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsFieldObjectNestedFieldMultiSelectFieldDefEnumOption) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 

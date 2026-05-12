@@ -27,9 +27,11 @@ func TestWorkflowNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Workflows.New(context.TODO(), anyformat.WorkflowNewParams{
-		Fields: []any{map[string]any{
-			"data_type": "string",
-			"name":      "invoice_number",
+		Fields: []anyformat.WorkflowNewParamsFieldUnion{{
+			OfString: &anyformat.WorkflowNewParamsFieldString{
+				Description: "x",
+				Name:        "invoice_number",
+			},
 		}},
 		Name:        "Invoice Processing",
 		Description: anyformat.String("Extracts invoice number, vendor, total, and line items."),
