@@ -1126,12 +1126,17 @@ type WorkflowRunResponse struct {
 	// Initial status of the run, typically `success` (meaning the run was accepted,
 	// not that extraction is complete).
 	Status string `json:"status" api:"required"`
+	// The workflow version this run was bound to (the latest version at submission
+	// time). Lets callers verify which schema produced the results — useful right
+	// after an edit.
+	VersionID string `json:"version_id" api:"required"`
 	// The UUID of the workflow that was executed.
 	WorkflowID string `json:"workflow_id" api:"required"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
 		ID          respjson.Field
 		Status      respjson.Field
+		VersionID   respjson.Field
 		WorkflowID  respjson.Field
 		ExtraFields map[string]respjson.Field
 		raw         string
