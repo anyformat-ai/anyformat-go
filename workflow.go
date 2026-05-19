@@ -787,8 +787,8 @@ func (r *WorkflowGetFileResultsResponseExtractionFieldArrayItemEvidence) Unmarsh
 // Parsed markdown for a file.
 type WorkflowGetFileResultsResponseParse struct {
 	// Document content rendered as structured markdown (with `<DOCUMENT>` /
-	// `<section>` tags, embedded images for the `visual` variant). `null` if parsing
-	// failed.
+	// `<section>` tags). Image hydration for picture/figure blocks happens
+	// client-side. `null` if parsing failed.
 	Markdown string `json:"markdown" api:"required"`
 	// Structured per-block representation of the parsed document — derived from
 	// `markdown` at retrieval time. One entry per `<section>` in document order, with
@@ -849,9 +849,8 @@ type WorkflowGetFileResultsResponseParseBlock struct {
 	Type string `json:"type" api:"required"`
 	// Hyperlinks found in the content via `[text](uri)` markdown syntax.
 	Hyperlinks []WorkflowGetFileResultsResponseParseBlockHyperlink `json:"hyperlinks"`
-	// Inline base64-encoded cropped image for `type=picture` blocks when the response
-	// was assembled from the visual markdown variant. `null` for non-picture blocks or
-	// when the raw variant was used.
+	// Inline base64-encoded cropped image for `type=picture` blocks. Currently `null`
+	// for all blocks — image hydration is performed client-side by the SDK consumer.
 	ImageBase64 string `json:"image_base64" api:"nullable"`
 	// 0-100 parse confidence calibrated from LLM logprobs. `null` when logprobs were
 	// unavailable (e.g. text-bytes strategy).
