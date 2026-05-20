@@ -27,14 +27,24 @@ func TestWorkflowNewWithOptionalParams(t *testing.T) {
 		option.WithAPIKey("My API Key"),
 	)
 	_, err := client.Workflows.New(context.TODO(), anyformat.WorkflowNewParams{
-		Fields: []anyformat.WorkflowNewParamsFieldUnion{{
-			OfString: &anyformat.WorkflowNewParamsFieldString{
-				Description: "x",
-				Name:        "invoice_number",
+		Name: "Invoice or receipt",
+		Nodes: []anyformat.WorkflowNewParamsNodeUnion{{
+			OfParse: &anyformat.WorkflowNewParamsNodeParse{
+				ID:                       "x",
+				Effort:                   "low",
+				Engine:                   "Fast",
+				FigureEnhancementEnabled: anyformat.Bool(true),
+				Mode:                     "standard",
+				PromptHint:               anyformat.String("prompt_hint"),
+				VisualGroundingEnabled:   anyformat.Bool(true),
 			},
 		}},
-		Name:        "Invoice Processing",
-		Description: anyformat.String("Extracts invoice number, vendor, total, and line items."),
+		Description: anyformat.String("description"),
+		Edges: []anyformat.WorkflowNewParamsEdge{{
+			Source: "x",
+			Target: "x",
+			Branch: anyformat.String("branch"),
+		}},
 	})
 	if err != nil {
 		var apierr *anyformat.Error
