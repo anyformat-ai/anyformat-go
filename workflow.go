@@ -786,14 +786,16 @@ func (r *WorkflowGetFileResultsResponseExtractionFieldArrayItemEvidence) Unmarsh
 
 // Parsed markdown for a file.
 type WorkflowGetFileResultsResponseParse struct {
-	// Document content rendered as structured markdown (with `<DOCUMENT>` /
-	// `<section>` tags). Image hydration for picture/figure blocks happens
-	// client-side. `null` if parsing failed.
+	// Document content rendered as structured markdown. Each block is preceded by an
+	// empty `<a id="p{page}_b{idx}"></a>` anchor (invisible in any markdown renderer;
+	// the id joins to `blocks[].id` and can be used as an in-page link target). Image
+	// hydration for picture/figure blocks happens client-side. `null` if parsing
+	// failed.
 	Markdown string `json:"markdown" api:"required"`
-	// Structured per-block representation of the parsed document — derived from
-	// `markdown` at retrieval time. One entry per `<section>` in document order, with
-	// type-specific structured data (`rows` for tables, `image_base64` for pictures)
-	// surfaced as first-class fields so consumers don't have to HTML-parse.
+	// Structured per-block representation of the parsed document. One entry per
+	// `<a id></a>` anchor in document order, with type-specific structured data
+	// (`rows` for tables, `image_base64` for pictures) surfaced as first-class fields
+	// so consumers don't have to HTML-parse.
 	Blocks []WorkflowGetFileResultsResponseParseBlock `json:"blocks"`
 	// Document-level YOLO layout confidence on a 0-100 scale, char-weighted mean
 	// across all blocks. `null` if no annotated sections.
@@ -802,10 +804,10 @@ type WorkflowGetFileResultsResponseParse struct {
 	// per-block LLM logprob scores. `null` when no blocks have logprob-based
 	// confidence.
 	ParseConfidence float64 `json:"parse_confidence" api:"nullable"`
-	// Plain markdown text with structural tags stripped — `<DOCUMENT>`, `<section>`,
-	// `<img>`, and `<figure-content>` wrappers removed, leaving the human-readable
-	// content only. Useful when feeding the parsed output into an LLM or a search
-	// index that doesn't need the block-level metadata. `null` if `markdown` is null.
+	// Plain markdown with structural HTML removed — `<DOCUMENT>` framing, block
+	// anchors, `<img>` tags, and `<figure-content>` wrappers stripped. Useful when
+	// feeding the parsed output into an LLM or a search index that doesn't need the
+	// block-level metadata. `null` if `markdown` is null.
 	Text string `json:"text" api:"nullable"`
 	// JSON contains metadata for fields, check presence with [respjson.Field.Valid].
 	JSON struct {
@@ -825,8 +827,8 @@ func (r *WorkflowGetFileResultsResponseParse) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// One semantic block of a parsed document — a structured alternative to
-// pattern-matching against `<section>` tags inside `markdown`.
+// One semantic block of a parsed document — a structured alternative to walking
+// `<a id></a>` anchors in `markdown`.
 //
 // All blocks expose the common fields (`id`, `type`, `page`, `bbox`, `confidence`,
 // `content`). Type-specific structured data lives in the optional fields (`rows`
@@ -1225,11 +1227,11 @@ type WorkflowNewParamsNodeParse struct {
 	// Stable identifier for this node within the graph.
 	ID string `json:"id" api:"required"`
 	// Free-form hint shown to the parse model to bias output.
-	PromptHint               param.Opt[string] `json:"prompt_hint,omitzero"`
-	FigureEnhancementEnabled param.Opt[bool]   `json:"figure_enhancement_enabled,omitzero"`
-	VisualGroundingEnabled   param.Opt[bool]   `json:"visual_grounding_enabled,omitzero"`
-	// Effort preset for agentic mode (low/mid/accurate). Defaults to 'mid' when
-	// `mode='agentic'` and not set; must be omitted when `mode='standard'`.
+	PromptHint             param.Opt[string] `json:"prompt_hint,omitzero"`
+	FigureEnhancement      param.Opt[bool]   `json:"figure_enhancement,omitzero"`
+	VisualGroundingEnabled param.Opt[bool]   `json:"visual_grounding_enabled,omitzero"`
+	// Effort preset for the agentic parser. Only consulted when `mode='agentic'`;
+	// ignored for `mode='standard'`.
 	//
 	// Any of "low", "mid", "accurate".
 	Effort string `json:"effort,omitzero"`
@@ -1319,12 +1321,12 @@ func (r *WorkflowNewParamsNodeSplitter) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// The properties ID, Description, Name, PartitionKey are required.
+// The properties ID, Description, Name are required.
 type WorkflowNewParamsNodeSplitterRule struct {
-	ID           string `json:"id" api:"required"`
-	Description  string `json:"description" api:"required"`
-	Name         string `json:"name" api:"required"`
-	PartitionKey string `json:"partition_key" api:"required"`
+	ID           string            `json:"id" api:"required"`
+	Description  string            `json:"description" api:"required"`
+	Name         string            `json:"name" api:"required"`
+	PartitionKey param.Opt[string] `json:"partition_key,omitzero"`
 	paramObj
 }
 
@@ -1340,9 +1342,25 @@ func (r *WorkflowNewParamsNodeSplitterRule) UnmarshalJSON(data []byte) error {
 type WorkflowNewParamsNodeExtract struct {
 	// Stable identifier for this node within the graph.
 	ID string `json:"id" api:"required"`
-	// Schema for the fields this node extracts.
+	// Schema for the fields this node extracts. Required. The backend executor
+	// populates this from the ORM field tree before constructing the typed node;
+	// nothing else should be able to build an ExtractNode without it.
 	ExtractionSchema WorkflowNewParamsNodeExtractExtractionSchema `json:"extraction_schema,omitzero" api:"required"`
-	UseImages        param.Opt[bool]                              `json:"use_images,omitzero"`
+	// Free-form hint shown to the smart-lookup matcher.
+	LookupSuggestion param.Opt[string] `json:"lookup_suggestion,omitzero"`
+	UseImages        param.Opt[bool]   `json:"use_images,omitzero"`
+	// Any of "Fast", "Performant".
+	Engine string `json:"engine,omitzero"`
+	// Smart-lookup reference document URIs persisted on the extract node.
+	LookupFiles []string `json:"lookup_files,omitzero"`
+	// Typed schema of fields the smart-lookup pass should produce. The _backend_
+	// derives this from the field tree (FieldWorkflowVersion rows whose source is
+	// SMART_LOOKUP) and attaches it to the node before the message hits the wire — the
+	// worker then reads it directly off the node, with no DB round-trip. Default
+	// empty: a node without smart-lookup fields carries an empty list.
+	LookupSchema []WorkflowNewParamsNodeExtractLookupSchemaUnion `json:"lookup_schema,omitzero"`
+	// Any of "standard", "agentic".
+	Mode string `json:"mode,omitzero"`
 	// This field can be elided, and will marshal its zero value as "extract".
 	Type constant.Extract `json:"type" default:"extract"`
 	paramObj
@@ -1356,7 +1374,18 @@ func (r *WorkflowNewParamsNodeExtract) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
-// Schema for the fields this node extracts.
+func init() {
+	apijson.RegisterFieldValidator[WorkflowNewParamsNodeExtract](
+		"engine", "Fast", "Performant",
+	)
+	apijson.RegisterFieldValidator[WorkflowNewParamsNodeExtract](
+		"mode", "standard", "agentic",
+	)
+}
+
+// Schema for the fields this node extracts. Required. The backend executor
+// populates this from the ORM field tree before constructing the typed node;
+// nothing else should be able to build an ExtractNode without it.
 //
 // The property Fields is required.
 type WorkflowNewParamsNodeExtractExtractionSchema struct {
@@ -1837,6 +1866,473 @@ func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiS
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDefEnumOption) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type WorkflowNewParamsNodeExtractLookupSchemaUnion struct {
+	OfString      *WorkflowNewParamsNodeExtractLookupSchemaString      `json:",omitzero,inline"`
+	OfInteger     *WorkflowNewParamsNodeExtractLookupSchemaInteger     `json:",omitzero,inline"`
+	OfFloat       *WorkflowNewParamsNodeExtractLookupSchemaFloat       `json:",omitzero,inline"`
+	OfBoolean     *WorkflowNewParamsNodeExtractLookupSchemaBoolean     `json:",omitzero,inline"`
+	OfDate        *WorkflowNewParamsNodeExtractLookupSchemaDate        `json:",omitzero,inline"`
+	OfDatetime    *WorkflowNewParamsNodeExtractLookupSchemaDatetime    `json:",omitzero,inline"`
+	OfEnum        *WorkflowNewParamsNodeExtractLookupSchemaEnum        `json:",omitzero,inline"`
+	OfMultiSelect *WorkflowNewParamsNodeExtractLookupSchemaMultiSelect `json:",omitzero,inline"`
+	OfObject      *WorkflowNewParamsNodeExtractLookupSchemaObject      `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u WorkflowNewParamsNodeExtractLookupSchemaUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfString,
+		u.OfInteger,
+		u.OfFloat,
+		u.OfBoolean,
+		u.OfDate,
+		u.OfDatetime,
+		u.OfEnum,
+		u.OfMultiSelect,
+		u.OfObject)
+}
+func (u *WorkflowNewParamsNodeExtractLookupSchemaUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+func init() {
+	apijson.RegisterUnion[WorkflowNewParamsNodeExtractLookupSchemaUnion](
+		"data_type",
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaString]("string"),
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaInteger]("integer"),
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaFloat]("float"),
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaBoolean]("boolean"),
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaDate]("date"),
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaDatetime]("datetime"),
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaEnum]("enum"),
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaMultiSelect]("multi_select"),
+		apijson.Discriminator[WorkflowNewParamsNodeExtractLookupSchemaObject]("object"),
+	)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaString struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "string".
+	DataType constant.String `json:"data_type" default:"string"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaString) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaString
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaString) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaInteger struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "integer".
+	DataType constant.Integer `json:"data_type" default:"integer"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaInteger) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaInteger
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaInteger) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaFloat struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "float".
+	DataType constant.Float `json:"data_type" default:"float"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaFloat) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaFloat
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaFloat) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaBoolean struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "boolean".
+	DataType constant.Boolean `json:"data_type" default:"boolean"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaBoolean) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaBoolean
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaBoolean) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaDate struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "date".
+	DataType constant.Date `json:"data_type" default:"date"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaDate) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaDate
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaDate) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaDatetime struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "datetime".
+	DataType constant.Datetime `json:"data_type" default:"datetime"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaDatetime) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaDatetime
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaDatetime) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, EnumOptions, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaEnum struct {
+	// Free-form description shown to the extraction model.
+	Description string                                                   `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaEnumEnumOption `json:"enum_options,omitzero" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "enum".
+	DataType constant.Enum `json:"data_type" default:"enum"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaEnum) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaEnum
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaEnum) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaEnumEnumOption struct {
+	// Free-form description shown to the model.
+	Description string `json:"description" api:"required"`
+	Name        string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaEnumEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaEnumEnumOption
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaEnumEnumOption) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, EnumOptions, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaMultiSelect struct {
+	// Free-form description shown to the extraction model.
+	Description string                                                          `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaMultiSelectEnumOption `json:"enum_options,omitzero" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "multi_select".
+	DataType constant.MultiSelect `json:"data_type" default:"multi_select"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaMultiSelect) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaMultiSelect
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaMultiSelect) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaMultiSelectEnumOption struct {
+	// Free-form description shown to the model.
+	Description string `json:"description" api:"required"`
+	Name        string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaMultiSelectEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaMultiSelectEnumOption
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaMultiSelectEnumOption) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name, NestedFields are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObject struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name         string                                                           `json:"name" api:"required"`
+	NestedFields []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldUnion `json:"nested_fields,omitzero" api:"required"`
+	// This field can be elided, and will marshal its zero value as "object".
+	DataType constant.Object `json:"data_type" default:"object"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObject) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObject
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObject) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Only one field can be non-zero.
+//
+// Use [param.IsOmitted] to confirm if a field is set.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldUnion struct {
+	OfStringFieldDef      *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef      `json:",omitzero,inline"`
+	OfIntegerFieldDef     *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef     `json:",omitzero,inline"`
+	OfFloatFieldDef       *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef       `json:",omitzero,inline"`
+	OfBooleanFieldDef     *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef     `json:",omitzero,inline"`
+	OfDateFieldDef        *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef        `json:",omitzero,inline"`
+	OfDatetimeFieldDef    *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef    `json:",omitzero,inline"`
+	OfEnumFieldDef        *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef        `json:",omitzero,inline"`
+	OfMultiSelectFieldDef *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef `json:",omitzero,inline"`
+	paramUnion
+}
+
+func (u WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldUnion) MarshalJSON() ([]byte, error) {
+	return param.MarshalUnion(u, u.OfStringFieldDef,
+		u.OfIntegerFieldDef,
+		u.OfFloatFieldDef,
+		u.OfBooleanFieldDef,
+		u.OfDateFieldDef,
+		u.OfDatetimeFieldDef,
+		u.OfEnumFieldDef,
+		u.OfMultiSelectFieldDef)
+}
+func (u *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldUnion) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, u)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "string".
+	DataType constant.String `json:"data_type" default:"string"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "integer".
+	DataType constant.Integer `json:"data_type" default:"integer"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "float".
+	DataType constant.Float `json:"data_type" default:"float"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "boolean".
+	DataType constant.Boolean `json:"data_type" default:"boolean"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "date".
+	DataType constant.Date `json:"data_type" default:"date"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string `json:"description" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "datetime".
+	DataType constant.Datetime `json:"data_type" default:"datetime"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, EnumOptions, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string                                                                            `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption `json:"enum_options,omitzero" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "enum".
+	DataType constant.Enum `json:"data_type" default:"enum"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption struct {
+	// Free-form description shown to the model.
+	Description string `json:"description" api:"required"`
+	Name        string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties DataType, Description, EnumOptions, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef struct {
+	// Free-form description shown to the extraction model.
+	Description string                                                                                   `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption `json:"enum_options,omitzero" api:"required"`
+	// Field name. Used as the key in the extraction response.
+	Name string `json:"name" api:"required"`
+	// This field can be elided, and will marshal its zero value as "multi_select".
+	DataType constant.MultiSelect `json:"data_type" default:"multi_select"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// The properties Description, Name are required.
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption struct {
+	// Free-form description shown to the model.
+	Description string `json:"description" api:"required"`
+	Name        string `json:"name" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
