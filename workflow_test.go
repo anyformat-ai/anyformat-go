@@ -30,13 +30,10 @@ func TestWorkflowNewWithOptionalParams(t *testing.T) {
 		Name: "Invoice or receipt",
 		Nodes: []anyformat.WorkflowNewParamsNodeUnion{{
 			OfParse: &anyformat.WorkflowNewParamsNodeParse{
-				ID:                     "x",
-				Effort:                 "low",
-				Engine:                 "Fast",
-				FigureEnhancement:      anyformat.Bool(true),
-				Mode:                   "standard",
-				PromptHint:             anyformat.String("prompt_hint"),
-				VisualGroundingEnabled: anyformat.Bool(true),
+				ID:                "x",
+				FigureEnhancement: anyformat.Bool(true),
+				Mode:              "standard",
+				PromptHint:        anyformat.String("prompt_hint"),
 			},
 		}},
 		Description: anyformat.String("description"),

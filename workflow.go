@@ -1227,16 +1227,8 @@ type WorkflowNewParamsNodeParse struct {
 	// Stable identifier for this node within the graph.
 	ID string `json:"id" api:"required"`
 	// Free-form hint shown to the parse model to bias output.
-	PromptHint             param.Opt[string] `json:"prompt_hint,omitzero"`
-	FigureEnhancement      param.Opt[bool]   `json:"figure_enhancement,omitzero"`
-	VisualGroundingEnabled param.Opt[bool]   `json:"visual_grounding_enabled,omitzero"`
-	// Effort preset for the agentic parser. Only consulted when `mode='agentic'`;
-	// ignored for `mode='standard'`.
-	//
-	// Any of "low", "mid", "accurate".
-	Effort string `json:"effort,omitzero"`
-	// Any of "Fast", "Performant".
-	Engine string `json:"engine,omitzero"`
+	PromptHint        param.Opt[string] `json:"prompt_hint,omitzero"`
+	FigureEnhancement param.Opt[bool]   `json:"figure_enhancement,omitzero"`
 	// Any of "standard", "agentic".
 	Mode string `json:"mode,omitzero"`
 	// This field can be elided, and will marshal its zero value as "parse".
@@ -1253,12 +1245,6 @@ func (r *WorkflowNewParamsNodeParse) UnmarshalJSON(data []byte) error {
 }
 
 func init() {
-	apijson.RegisterFieldValidator[WorkflowNewParamsNodeParse](
-		"effort", "low", "mid", "accurate",
-	)
-	apijson.RegisterFieldValidator[WorkflowNewParamsNodeParse](
-		"engine", "Fast", "Performant",
-	)
 	apijson.RegisterFieldValidator[WorkflowNewParamsNodeParse](
 		"mode", "standard", "agentic",
 	)
@@ -1349,8 +1335,6 @@ type WorkflowNewParamsNodeExtract struct {
 	// Free-form hint shown to the smart-lookup matcher.
 	LookupSuggestion param.Opt[string] `json:"lookup_suggestion,omitzero"`
 	UseImages        param.Opt[bool]   `json:"use_images,omitzero"`
-	// Any of "Fast", "Performant".
-	Engine string `json:"engine,omitzero"`
 	// Smart-lookup reference document URIs persisted on the extract node.
 	LookupFiles []string `json:"lookup_files,omitzero"`
 	// Typed schema of fields the smart-lookup pass should produce. The _backend_
@@ -1375,9 +1359,6 @@ func (r *WorkflowNewParamsNodeExtract) UnmarshalJSON(data []byte) error {
 }
 
 func init() {
-	apijson.RegisterFieldValidator[WorkflowNewParamsNodeExtract](
-		"engine", "Fast", "Performant",
-	)
 	apijson.RegisterFieldValidator[WorkflowNewParamsNodeExtract](
 		"mode", "standard", "agentic",
 	)
