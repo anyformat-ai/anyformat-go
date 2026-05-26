@@ -1639,33 +1639,33 @@ func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObject) UnmarshalJSON(
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldUnion struct {
-	OfStringFieldDef      *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringFieldDef      `json:",omitzero,inline"`
-	OfIntegerFieldDef     *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerFieldDef     `json:",omitzero,inline"`
-	OfFloatFieldDef       *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatFieldDef       `json:",omitzero,inline"`
-	OfBooleanFieldDef     *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanFieldDef     `json:",omitzero,inline"`
-	OfDateFieldDef        *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateFieldDef        `json:",omitzero,inline"`
-	OfDatetimeFieldDef    *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeFieldDef    `json:",omitzero,inline"`
-	OfEnumFieldDef        *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDef        `json:",omitzero,inline"`
-	OfMultiSelectFieldDef *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDef `json:",omitzero,inline"`
+	OfStringField      *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringField      `json:",omitzero,inline"`
+	OfIntegerField     *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerField     `json:",omitzero,inline"`
+	OfFloatField       *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatField       `json:",omitzero,inline"`
+	OfBooleanField     *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanField     `json:",omitzero,inline"`
+	OfDateField        *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateField        `json:",omitzero,inline"`
+	OfDatetimeField    *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeField    `json:",omitzero,inline"`
+	OfEnumField        *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumField        `json:",omitzero,inline"`
+	OfMultiSelectField *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectField `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfStringFieldDef,
-		u.OfIntegerFieldDef,
-		u.OfFloatFieldDef,
-		u.OfBooleanFieldDef,
-		u.OfDateFieldDef,
-		u.OfDatetimeFieldDef,
-		u.OfEnumFieldDef,
-		u.OfMultiSelectFieldDef)
+	return param.MarshalUnion(u, u.OfStringField,
+		u.OfIntegerField,
+		u.OfFloatField,
+		u.OfBooleanField,
+		u.OfDateField,
+		u.OfDatetimeField,
+		u.OfEnumField,
+		u.OfMultiSelectField)
 }
 func (u *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringFieldDef struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -1675,16 +1675,16 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringFie
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringFieldDef
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerFieldDef struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -1694,16 +1694,16 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerFi
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerFieldDef
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatFieldDef struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -1713,16 +1713,16 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatFiel
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatFieldDef
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanFieldDef struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -1732,16 +1732,16 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanFi
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanFieldDef
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateFieldDef struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -1751,16 +1751,16 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateField
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateFieldDef
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeFieldDef struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -1770,19 +1770,19 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeF
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeFieldDef
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, EnumOptions, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDef struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumField struct {
 	// Free-form description shown to the extraction model.
-	Description string                                                                                     `json:"description" api:"required"`
-	EnumOptions []WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDefEnumOption `json:"enum_options,omitzero" api:"required"`
+	Description string                                                                                  `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
 	Name string `json:"name" api:"required"`
 	// This field can be elided, and will marshal its zero value as "enum".
@@ -1790,35 +1790,35 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumField
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDef
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Description, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDefEnumOption struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldEnumOption struct {
 	// Free-form description shown to the model.
 	Description string `json:"description" api:"required"`
 	Name        string `json:"name" api:"required"`
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDefEnumOption) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDefEnumOption
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldEnumOption
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldDefEnumOption) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldEnumOption) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, EnumOptions, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDef struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectField struct {
 	// Free-form description shown to the extraction model.
-	Description string                                                                                            `json:"description" api:"required"`
-	EnumOptions []WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDefEnumOption `json:"enum_options,omitzero" api:"required"`
+	Description string                                                                                         `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
 	Name string `json:"name" api:"required"`
 	// This field can be elided, and will marshal its zero value as "multi_select".
@@ -1826,27 +1826,27 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSele
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDef
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Description, Name are required.
-type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDefEnumOption struct {
+type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldEnumOption struct {
 	// Free-form description shown to the model.
 	Description string `json:"description" api:"required"`
 	Name        string `json:"name" api:"required"`
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDefEnumOption) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDefEnumOption
+func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldEnumOption
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldDefEnumOption) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldEnumOption) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -2106,33 +2106,33 @@ func (r *WorkflowNewParamsNodeExtractLookupSchemaObject) UnmarshalJSON(data []by
 //
 // Use [param.IsOmitted] to confirm if a field is set.
 type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldUnion struct {
-	OfStringFieldDef      *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef      `json:",omitzero,inline"`
-	OfIntegerFieldDef     *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef     `json:",omitzero,inline"`
-	OfFloatFieldDef       *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef       `json:",omitzero,inline"`
-	OfBooleanFieldDef     *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef     `json:",omitzero,inline"`
-	OfDateFieldDef        *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef        `json:",omitzero,inline"`
-	OfDatetimeFieldDef    *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef    `json:",omitzero,inline"`
-	OfEnumFieldDef        *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef        `json:",omitzero,inline"`
-	OfMultiSelectFieldDef *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef `json:",omitzero,inline"`
+	OfStringField      *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringField      `json:",omitzero,inline"`
+	OfIntegerField     *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerField     `json:",omitzero,inline"`
+	OfFloatField       *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatField       `json:",omitzero,inline"`
+	OfBooleanField     *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanField     `json:",omitzero,inline"`
+	OfDateField        *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateField        `json:",omitzero,inline"`
+	OfDatetimeField    *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeField    `json:",omitzero,inline"`
+	OfEnumField        *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumField        `json:",omitzero,inline"`
+	OfMultiSelectField *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectField `json:",omitzero,inline"`
 	paramUnion
 }
 
 func (u WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldUnion) MarshalJSON() ([]byte, error) {
-	return param.MarshalUnion(u, u.OfStringFieldDef,
-		u.OfIntegerFieldDef,
-		u.OfFloatFieldDef,
-		u.OfBooleanFieldDef,
-		u.OfDateFieldDef,
-		u.OfDatetimeFieldDef,
-		u.OfEnumFieldDef,
-		u.OfMultiSelectFieldDef)
+	return param.MarshalUnion(u, u.OfStringField,
+		u.OfIntegerField,
+		u.OfFloatField,
+		u.OfBooleanField,
+		u.OfDateField,
+		u.OfDatetimeField,
+		u.OfEnumField,
+		u.OfMultiSelectField)
 }
 func (u *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldUnion) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, u)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -2142,16 +2142,16 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef str
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -2161,16 +2161,16 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef st
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -2180,16 +2180,16 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef stru
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -2199,16 +2199,16 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef st
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -2218,16 +2218,16 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef struc
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
@@ -2237,19 +2237,19 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef s
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, EnumOptions, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumField struct {
 	// Free-form description shown to the extraction model.
-	Description string                                                                            `json:"description" api:"required"`
-	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption `json:"enum_options,omitzero" api:"required"`
+	Description string                                                                         `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
 	Name string `json:"name" api:"required"`
 	// This field can be elided, and will marshal its zero value as "enum".
@@ -2257,35 +2257,35 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef struc
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Description, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldEnumOption struct {
 	// Free-form description shown to the model.
 	Description string `json:"description" api:"required"`
 	Name        string `json:"name" api:"required"`
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldEnumOption
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldDefEnumOption) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldEnumOption) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties DataType, Description, EnumOptions, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectField struct {
 	// Free-form description shown to the extraction model.
-	Description string                                                                                   `json:"description" api:"required"`
-	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption `json:"enum_options,omitzero" api:"required"`
+	Description string                                                                                `json:"description" api:"required"`
+	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
 	Name string `json:"name" api:"required"`
 	// This field can be elided, and will marshal its zero value as "multi_select".
@@ -2293,27 +2293,27 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDe
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectField) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectField
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDef) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectField) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
 // The properties Description, Name are required.
-type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption struct {
+type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldEnumOption struct {
 	// Free-form description shown to the model.
 	Description string `json:"description" api:"required"`
 	Name        string `json:"name" api:"required"`
 	paramObj
 }
 
-func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption) MarshalJSON() (data []byte, err error) {
-	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption
+func (r WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldEnumOption) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldEnumOption
 	return param.MarshalObject(r, (*shadow)(&r))
 }
-func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldDefEnumOption) UnmarshalJSON(data []byte) error {
+func (r *WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldEnumOption) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
