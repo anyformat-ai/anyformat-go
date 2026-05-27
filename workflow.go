@@ -1335,6 +1335,10 @@ type WorkflowNewParamsNodeExtract struct {
 	// Free-form hint shown to the smart-lookup matcher.
 	LookupSuggestion param.Opt[string] `json:"lookup_suggestion,omitzero"`
 	UseImages        param.Opt[bool]   `json:"use_images,omitzero"`
+	// Inline lookup-file content for the typed create call. The backend uploads each
+	// entry to S3 and stores the resulting URI in `lookup_files`; this field is never
+	// persisted in GraphNode.config.
+	LookupFileUploads []WorkflowNewParamsNodeExtractLookupFileUpload `json:"lookup_file_uploads,omitzero"`
 	// Smart-lookup reference document URIs persisted on the extract node.
 	LookupFiles []string `json:"lookup_files,omitzero"`
 	// Typed schema of fields the smart-lookup pass should produce. The _backend_
@@ -1434,7 +1438,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldString struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "string".
 	DataType constant.String `json:"data_type" default:"string"`
 	paramObj
@@ -1453,7 +1458,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldInteger struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "integer".
 	DataType constant.Integer `json:"data_type" default:"integer"`
 	paramObj
@@ -1472,7 +1478,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldFloat struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "float".
 	DataType constant.Float `json:"data_type" default:"float"`
 	paramObj
@@ -1491,7 +1498,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldBoolean struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "boolean".
 	DataType constant.Boolean `json:"data_type" default:"boolean"`
 	paramObj
@@ -1510,7 +1518,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldDate struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "date".
 	DataType constant.Date `json:"data_type" default:"date"`
 	paramObj
@@ -1529,7 +1538,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldDatetime struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "datetime".
 	DataType constant.Datetime `json:"data_type" default:"datetime"`
 	paramObj
@@ -1549,7 +1559,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldEnum struct {
 	Description string                                                            `json:"description" api:"required"`
 	EnumOptions []WorkflowNewParamsNodeExtractExtractionSchemaFieldEnumEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enum".
 	DataType constant.Enum `json:"data_type" default:"enum"`
 	paramObj
@@ -1585,7 +1596,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldMultiSelect struct {
 	Description string                                                                   `json:"description" api:"required"`
 	EnumOptions []WorkflowNewParamsNodeExtractExtractionSchemaFieldMultiSelectEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "multi_select".
 	DataType constant.MultiSelect `json:"data_type" default:"multi_select"`
 	paramObj
@@ -1622,6 +1634,7 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObject struct {
 	// Field name. Used as the key in the extraction response.
 	Name         string                                                                    `json:"name" api:"required"`
 	NestedFields []WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldUnion `json:"nested_fields,omitzero" api:"required"`
+	Lookup       param.Opt[bool]                                                           `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
 	DataType constant.Object `json:"data_type" default:"object"`
 	paramObj
@@ -1669,7 +1682,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldStringFie
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "string".
 	DataType constant.String `json:"data_type" default:"string"`
 	paramObj
@@ -1688,7 +1702,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldIntegerFi
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "integer".
 	DataType constant.Integer `json:"data_type" default:"integer"`
 	paramObj
@@ -1707,7 +1722,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldFloatFiel
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "float".
 	DataType constant.Float `json:"data_type" default:"float"`
 	paramObj
@@ -1726,7 +1742,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldBooleanFi
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "boolean".
 	DataType constant.Boolean `json:"data_type" default:"boolean"`
 	paramObj
@@ -1745,7 +1762,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDateField
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "date".
 	DataType constant.Date `json:"data_type" default:"date"`
 	paramObj
@@ -1764,7 +1782,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldDatetimeF
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "datetime".
 	DataType constant.Datetime `json:"data_type" default:"datetime"`
 	paramObj
@@ -1784,7 +1803,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumField
 	Description string                                                                                  `json:"description" api:"required"`
 	EnumOptions []WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldEnumFieldEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enum".
 	DataType constant.Enum `json:"data_type" default:"enum"`
 	paramObj
@@ -1820,7 +1840,8 @@ type WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSele
 	Description string                                                                                         `json:"description" api:"required"`
 	EnumOptions []WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "multi_select".
 	DataType constant.MultiSelect `json:"data_type" default:"multi_select"`
 	paramObj
@@ -1847,6 +1868,29 @@ func (r WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiS
 	return param.MarshalObject(r, (*shadow)(&r))
 }
 func (r *WorkflowNewParamsNodeExtractExtractionSchemaFieldObjectNestedFieldMultiSelectFieldEnumOption) UnmarshalJSON(data []byte) error {
+	return apijson.UnmarshalRoot(data, r)
+}
+
+// Inline lookup-file content carried on the typed create call.
+//
+// The backend reads `filename` + `content` (base64-encoded bytes), uploads the
+// file to S3 during workflow create, and stores the resulting URI in
+// `ExtractNode.lookup_files`. This field is stripped from the persisted
+// `GraphNode.config` — it is create-input only.
+//
+// The properties Content, Filename are required.
+type WorkflowNewParamsNodeExtractLookupFileUpload struct {
+	// Base64-encoded file bytes.
+	Content  string `json:"content" api:"required"`
+	Filename string `json:"filename" api:"required"`
+	paramObj
+}
+
+func (r WorkflowNewParamsNodeExtractLookupFileUpload) MarshalJSON() (data []byte, err error) {
+	type shadow WorkflowNewParamsNodeExtractLookupFileUpload
+	return param.MarshalObject(r, (*shadow)(&r))
+}
+func (r *WorkflowNewParamsNodeExtractLookupFileUpload) UnmarshalJSON(data []byte) error {
 	return apijson.UnmarshalRoot(data, r)
 }
 
@@ -1901,7 +1945,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaString struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "string".
 	DataType constant.String `json:"data_type" default:"string"`
 	paramObj
@@ -1920,7 +1965,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaInteger struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "integer".
 	DataType constant.Integer `json:"data_type" default:"integer"`
 	paramObj
@@ -1939,7 +1985,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaFloat struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "float".
 	DataType constant.Float `json:"data_type" default:"float"`
 	paramObj
@@ -1958,7 +2005,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaBoolean struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "boolean".
 	DataType constant.Boolean `json:"data_type" default:"boolean"`
 	paramObj
@@ -1977,7 +2025,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaDate struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "date".
 	DataType constant.Date `json:"data_type" default:"date"`
 	paramObj
@@ -1996,7 +2045,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaDatetime struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "datetime".
 	DataType constant.Datetime `json:"data_type" default:"datetime"`
 	paramObj
@@ -2016,7 +2066,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaEnum struct {
 	Description string                                                   `json:"description" api:"required"`
 	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaEnumEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enum".
 	DataType constant.Enum `json:"data_type" default:"enum"`
 	paramObj
@@ -2052,7 +2103,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaMultiSelect struct {
 	Description string                                                          `json:"description" api:"required"`
 	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaMultiSelectEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "multi_select".
 	DataType constant.MultiSelect `json:"data_type" default:"multi_select"`
 	paramObj
@@ -2089,6 +2141,7 @@ type WorkflowNewParamsNodeExtractLookupSchemaObject struct {
 	// Field name. Used as the key in the extraction response.
 	Name         string                                                           `json:"name" api:"required"`
 	NestedFields []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldUnion `json:"nested_fields,omitzero" api:"required"`
+	Lookup       param.Opt[bool]                                                  `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "object".
 	DataType constant.Object `json:"data_type" default:"object"`
 	paramObj
@@ -2136,7 +2189,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldStringField struct
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "string".
 	DataType constant.String `json:"data_type" default:"string"`
 	paramObj
@@ -2155,7 +2209,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldIntegerField struc
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "integer".
 	DataType constant.Integer `json:"data_type" default:"integer"`
 	paramObj
@@ -2174,7 +2229,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldFloatField struct 
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "float".
 	DataType constant.Float `json:"data_type" default:"float"`
 	paramObj
@@ -2193,7 +2249,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldBooleanField struc
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "boolean".
 	DataType constant.Boolean `json:"data_type" default:"boolean"`
 	paramObj
@@ -2212,7 +2269,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDateField struct {
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "date".
 	DataType constant.Date `json:"data_type" default:"date"`
 	paramObj
@@ -2231,7 +2289,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldDatetimeField stru
 	// Free-form description shown to the extraction model.
 	Description string `json:"description" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "datetime".
 	DataType constant.Datetime `json:"data_type" default:"datetime"`
 	paramObj
@@ -2251,7 +2310,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumField struct {
 	Description string                                                                         `json:"description" api:"required"`
 	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldEnumFieldEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "enum".
 	DataType constant.Enum `json:"data_type" default:"enum"`
 	paramObj
@@ -2287,7 +2347,8 @@ type WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectField s
 	Description string                                                                                `json:"description" api:"required"`
 	EnumOptions []WorkflowNewParamsNodeExtractLookupSchemaObjectNestedFieldMultiSelectFieldEnumOption `json:"enum_options,omitzero" api:"required"`
 	// Field name. Used as the key in the extraction response.
-	Name string `json:"name" api:"required"`
+	Name   string          `json:"name" api:"required"`
+	Lookup param.Opt[bool] `json:"lookup,omitzero"`
 	// This field can be elided, and will marshal its zero value as "multi_select".
 	DataType constant.MultiSelect `json:"data_type" default:"multi_select"`
 	paramObj
