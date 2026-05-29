@@ -41,7 +41,8 @@ func NewFileService(opts ...option.RequestOption) (r FileService) {
 // This removes all uploaded files and any extraction results associated with the
 // collection. This action is irreversible.
 func (r *FileService) Delete(ctx context.Context, collectionID string, opts ...option.RequestOption) (err error) {
-	opts = slices.Concat(r.options, opts)
+	var preClientOpts = []option.RequestOption{requestconfig.WithSecurity(requestconfig.Security{})}
+	opts = slices.Concat(preClientOpts, r.options, opts)
 	opts = append([]option.RequestOption{option.WithHeader("Accept", "*/*")}, opts...)
 	if collectionID == "" {
 		err = errors.New("missing required collection_id parameter")

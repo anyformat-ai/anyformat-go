@@ -37,7 +37,7 @@ Or to pin the version:
 <!-- x-release-please-start-version -->
 
 ```sh
-go get -u 'github.com/anyformat-ai/anyformat-go@v0.3.0'
+go get -u 'github.com/anyformat-ai/anyformat-go@v0.4.0'
 ```
 
 <!-- x-release-please-end -->
@@ -58,13 +58,10 @@ import (
 	"fmt"
 
 	"github.com/anyformat-ai/anyformat-go"
-	"github.com/anyformat-ai/anyformat-go/option"
 )
 
 func main() {
-	client := anyformat.NewClient(
-		option.WithAPIKey("My API Key"), // defaults to os.LookupEnv("ANYFORMAT_API_KEY")
-	)
+	client := anyformat.NewClient()
 	response, err := client.Workflows.Run(
 		context.TODO(),
 		"0686bb97-8c30-70f0-8000-97669e000eb8",
