@@ -1228,6 +1228,7 @@ type WorkflowNewParamsNodeParse struct {
 	ID string `json:"id" api:"required"`
 	// Free-form hint shown to the parse model to bias output.
 	PromptHint        param.Opt[string] `json:"prompt_hint,omitzero"`
+	Cache             param.Opt[bool]   `json:"cache,omitzero"`
 	FigureEnhancement param.Opt[bool]   `json:"figure_enhancement,omitzero"`
 	// Any of "standard", "agentic".
 	Mode string `json:"mode,omitzero"`
