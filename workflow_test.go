@@ -31,6 +31,7 @@ func TestWorkflowNewWithOptionalParams(t *testing.T) {
 		Nodes: []anyformat.WorkflowNewParamsNodeUnion{{
 			OfParse: &anyformat.WorkflowNewParamsNodeParse{
 				ID:                "x",
+				Cache:             anyformat.Bool(true),
 				FigureEnhancement: anyformat.Bool(true),
 				Mode:              "standard",
 				PromptHint:        anyformat.String("prompt_hint"),
